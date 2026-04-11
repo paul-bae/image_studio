@@ -21,3 +21,8 @@ build/
 # OS
 .DS_Store
 Thumbs.db
+
+.vercel
+
+# 클라이언트 API 키 설정 — 절대 커밋 금지
+config.js

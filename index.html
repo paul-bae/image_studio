@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AI 이미지 스튜디오</title>
 
-  <!-- 1. Tailwind CSS CDN (스타일 보완용) -->
+  <!-- 1. Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
 
   <!-- 2. Supabase CDN -->
@@ -24,383 +24,378 @@
     </div>
   </header>
 
-  <!-- ===== MAIN LAYOUT ===== -->
+  <!-- ===== MAIN LAYOUT: 40% 왼쪽 | 60% 오른쪽 ===== -->
   <main class="main-layout" role="main">
 
-    <!-- ========================================================
-         LEFT PANEL — 이미지 생성
-    ======================================================== -->
-    <section
-      class="panel panel-left"
-      aria-labelledby="generate-panel-title"
-      data-testid="generate-panel"
-    >
-      <div class="panel-header">
-        <span class="panel-badge badge-blue" aria-hidden="true">✦</span>
-        <h2 class="panel-title" id="generate-panel-title">이미지 생성</h2>
-      </div>
+    <!-- ============================================================
+         LEFT PANEL (40%) — 탭 구조
+    ============================================================ -->
+    <section class="panel panel-left" aria-label="입력 패널">
 
-      <form id="generate-form" novalidate>
-
-        <!-- 과정명 -->
-        <div class="field-group">
-          <label class="field-label" for="course-name">
-            과정명 <span class="required-mark" aria-label="필수 입력">*</span>
-          </label>
-          <div class="textarea-wrapper">
-            <textarea
-              id="course-name"
-              name="courseName"
-              class="field-textarea"
-              maxlength="200"
-              rows="3"
-              placeholder="과정명을 입력하세요 (최대 200자)"
-              aria-describedby="course-name-counter course-name-hint"
-              data-testid="input-course-name"
-              required
-            ></textarea>
-            <span class="char-counter" id="course-name-counter" aria-live="polite">
-              <span class="char-current">0</span> / 200
-            </span>
-          </div>
-          <p class="field-hint" id="course-name-hint">이미지 생성의 핵심 주제가 됩니다.</p>
-        </div>
-
-        <!-- 교육대상 -->
-        <div class="field-group">
-          <label class="field-label" for="target-audience">교육대상</label>
-          <div class="textarea-wrapper">
-            <textarea
-              id="target-audience"
-              name="targetAudience"
-              class="field-textarea"
-              maxlength="2000"
-              rows="4"
-              placeholder="교육대상을 입력하세요 (최대 2,000자)"
-              aria-describedby="target-audience-counter"
-              data-testid="input-target-audience"
-            ></textarea>
-            <span class="char-counter" id="target-audience-counter" aria-live="polite">
-              <span class="char-current">0</span> / 2,000
-            </span>
-          </div>
-        </div>
-
-        <!-- 교육목표 -->
-        <div class="field-group">
-          <label class="field-label" for="learning-objectives">교육목표</label>
-          <div class="textarea-wrapper">
-            <textarea
-              id="learning-objectives"
-              name="learningObjectives"
-              class="field-textarea"
-              maxlength="2000"
-              rows="4"
-              placeholder="교육목표를 입력하세요 (최대 2,000자)"
-              aria-describedby="learning-objectives-counter"
-              data-testid="input-learning-objectives"
-            ></textarea>
-            <span class="char-counter" id="learning-objectives-counter" aria-live="polite">
-              <span class="char-current">0</span> / 2,000
-            </span>
-          </div>
-        </div>
-
-        <!-- 세부내용 -->
-        <div class="field-group">
-          <label class="field-label" for="detailed-content">세부내용</label>
-          <div class="textarea-wrapper">
-            <textarea
-              id="detailed-content"
-              name="detailedContent"
-              class="field-textarea"
-              maxlength="2000"
-              rows="4"
-              placeholder="세부내용을 입력하세요 (최대 2,000자)"
-              aria-describedby="detailed-content-counter"
-              data-testid="input-detailed-content"
-            ></textarea>
-            <span class="char-counter" id="detailed-content-counter" aria-live="polite">
-              <span class="char-current">0</span> / 2,000
-            </span>
-          </div>
-        </div>
-
-        <!-- 옵션: 비율 & 규격 -->
-        <div class="options-row">
-          <div class="field-group field-inline">
-            <label class="field-label" for="gen-ratio">이미지 비율</label>
-            <select
-              id="gen-ratio"
-              name="imageRatio"
-              class="field-select"
-              data-testid="select-gen-ratio"
-            >
-              <option value="4:3">4 : 3</option>
-              <option value="5:4">5 : 4</option>
-              <option value="16:9" selected>16 : 9</option>
-              <option value="21:9">21 : 9</option>
-            </select>
-          </div>
-
-          <div class="field-group field-inline">
-            <label class="field-label" for="gen-size">이미지 규격</label>
-            <select
-              id="gen-size"
-              name="imageSize"
-              class="field-select"
-              data-testid="select-gen-size"
-            >
-              <option value="520x292">520 × 292</option>
-              <option value="1280x720" selected>1280 × 720</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- 모델 정보 표시 -->
-        <div
-          id="gen-model-info"
-          class="model-info-bar"
-          role="status"
-          aria-live="polite"
-          aria-label="사용 가능한 모델 정보"
-          hidden
-        ></div>
-
-        <!-- 버튼 영역 -->
-        <div class="btn-row">
-          <button
-            type="submit"
-            id="btn-generate"
-            class="btn btn-primary btn-blue"
-            data-testid="btn-generate"
-          >
-            <span class="btn-icon" aria-hidden="true">⚡</span>
-            이미지 생성
-          </button>
-          <button
-            type="button"
-            id="btn-gen-download"
-            class="btn btn-secondary btn-green"
-            disabled
-            aria-disabled="true"
-            data-testid="btn-gen-download"
-          >
-            <span class="btn-icon" aria-hidden="true">↓</span>
-            이미지 다운로드
-          </button>
-        </div>
-
-        <!-- 결과 영역 -->
-        <div
-          id="gen-result"
-          class="result-area"
-          role="region"
-          aria-label="이미지 생성 결과"
-          aria-live="polite"
+      <!-- 탭 네비게이션 -->
+      <nav class="tab-nav" role="tablist" aria-label="기능 선택">
+        <button
+          class="tab-btn tab-active"
+          role="tab"
+          id="tab-btn-generate"
+          aria-selected="true"
+          aria-controls="tab-generate"
+          data-tab="generate"
         >
-          <!-- 로딩 상태 (JS로 표시/숨김) -->
-          <div id="gen-loading" class="loading-state" hidden aria-busy="true">
-            <div class="spinner" aria-hidden="true"></div>
-            <p class="loading-text">
-              현재 시도 중인 모델:
-              <strong id="gen-current-model" class="model-name">—</strong>
-            </p>
-          </div>
+          <span class="tab-icon" aria-hidden="true">⚡</span>
+          이미지 생성
+        </button>
+        <button
+          class="tab-btn"
+          role="tab"
+          id="tab-btn-correct"
+          aria-selected="false"
+          aria-controls="tab-correct"
+          data-tab="correct"
+        >
+          <span class="tab-icon" aria-hidden="true">✨</span>
+          이미지 보정
+        </button>
+      </nav>
 
-          <!-- 에러 상태 -->
-          <div id="gen-error" class="error-state" hidden role="alert"></div>
+      <!-- ── 탭 1: 이미지 생성 ── -->
+      <div
+        id="tab-generate"
+        class="tab-panel"
+        role="tabpanel"
+        aria-labelledby="tab-btn-generate"
+      >
+        <form id="generate-form" novalidate>
 
-          <!-- 생성된 이미지 -->
-          <div id="gen-image-container" class="image-container" hidden>
-            <img
-              id="gen-image"
-              class="result-image"
-              src=""
-              alt="AI가 생성한 교육 이미지"
-              width="100%"
-              data-testid="gen-result-image"
-            />
-            <div id="gen-prompt-display" class="prompt-display" hidden>
-              <p class="prompt-label">사용된 프롬프트</p>
-              <p id="gen-prompt-text" class="prompt-text"></p>
+          <!-- 이미지 명칭 -->
+          <div class="field-group">
+            <label class="field-label" for="course-name">
+              이미지 명칭 <span class="required-mark" aria-label="필수 입력">*</span>
+            </label>
+            <div class="textarea-wrapper">
+              <input
+                type="text"
+                id="course-name"
+                name="courseName"
+                class="field-input"
+                maxlength="200"
+                placeholder="이미지 명칭을 입력하세요 (최대 200자)"
+                aria-describedby="course-name-counter"
+                data-testid="input-course-name"
+                required
+              />
+              <span class="char-counter char-counter-inline" id="course-name-counter" aria-live="polite">
+                <span class="char-current">0</span> / 200
+              </span>
             </div>
           </div>
-        </div>
 
-      </form>
-    </section>
-
-    <!-- ========================================================
-         RIGHT PANEL — 이미지 보정
-    ======================================================== -->
-    <section
-      class="panel panel-right"
-      aria-labelledby="correct-panel-title"
-      data-testid="correct-panel"
-    >
-      <div class="panel-header">
-        <span class="panel-badge badge-purple" aria-hidden="true">✦</span>
-        <h2 class="panel-title" id="correct-panel-title">이미지 보정</h2>
-      </div>
-
-      <form id="correct-form" novalidate>
-
-        <!-- 파일 업로드 -->
-        <div class="field-group">
-          <label class="field-label" for="correct-file-input">
-            보정할 이미지 <span class="required-mark" aria-label="필수 입력">*</span>
-          </label>
-
-          <div
-            id="drop-zone"
-            class="drop-zone"
-            role="button"
-            tabindex="0"
-            aria-label="이미지 파일을 드래그하거나 클릭하여 선택하세요"
-            aria-describedby="drop-zone-hint"
-            data-testid="drop-zone"
-          >
-            <div id="drop-zone-content" class="drop-zone-content">
-              <span class="drop-icon" aria-hidden="true">🖼️</span>
-              <p class="drop-primary">이미지를 드래그하거나 클릭하여 선택</p>
-              <p class="drop-secondary" id="drop-zone-hint">JPG, PNG, WebP, GIF — 최대 20MB</p>
+          <!-- 적용 분야 -->
+          <div class="field-group">
+            <label class="field-label" for="target-audience">적용 분야</label>
+            <div class="textarea-wrapper">
+              <textarea
+                id="target-audience"
+                name="targetAudience"
+                class="field-textarea"
+                maxlength="2000"
+                rows="2"
+                placeholder="적용 분야를 입력하세요 (최대 2,000자)"
+                aria-describedby="target-audience-counter"
+                data-testid="input-target-audience"
+              ></textarea>
+              <span class="char-counter" id="target-audience-counter" aria-live="polite">
+                <span class="char-current">0</span> / 2,000
+              </span>
             </div>
-            <input
-              type="file"
-              id="correct-file-input"
-              name="correctFile"
-              accept="image/*"
-              class="file-input-hidden"
-              aria-label="이미지 파일 선택"
-              data-testid="input-correct-file"
-            />
           </div>
 
-          <!-- 이미지 미리보기 -->
-          <div id="preview-container" class="preview-container" hidden>
-            <img
-              id="preview-image"
-              class="preview-image"
-              src=""
-              alt="선택한 이미지 미리보기"
-              data-testid="preview-image"
-            />
+          <!-- 이미지 컨셉 -->
+          <div class="field-group">
+            <label class="field-label" for="learning-objectives">이미지 컨셉</label>
+            <div class="textarea-wrapper">
+              <textarea
+                id="learning-objectives"
+                name="learningObjectives"
+                class="field-textarea"
+                maxlength="2000"
+                rows="2"
+                placeholder="이미지 컨셉을 입력하세요 (최대 2,000자)"
+                aria-describedby="learning-objectives-counter"
+                data-testid="input-learning-objectives"
+              ></textarea>
+              <span class="char-counter" id="learning-objectives-counter" aria-live="polite">
+                <span class="char-current">0</span> / 2,000
+              </span>
+            </div>
+          </div>
+
+          <!-- 세부내용 -->
+          <div class="field-group">
+            <label class="field-label" for="detailed-content">세부내용</label>
+            <div class="textarea-wrapper">
+              <textarea
+                id="detailed-content"
+                name="detailedContent"
+                class="field-textarea"
+                maxlength="2000"
+                rows="2"
+                placeholder="세부내용을 입력하세요 (최대 2,000자)"
+                aria-describedby="detailed-content-counter"
+                data-testid="input-detailed-content"
+              ></textarea>
+              <span class="char-counter" id="detailed-content-counter" aria-live="polite">
+                <span class="char-current">0</span> / 2,000
+              </span>
+            </div>
+          </div>
+
+          <!-- 이미지 비율 & 규격 -->
+          <div class="options-row">
+            <div class="field-group field-inline">
+              <label class="field-label" for="gen-ratio">이미지 비율</label>
+              <select id="gen-ratio" name="imageRatio" class="field-select" data-testid="select-gen-ratio">
+                <option value="4:3">4 : 3</option>
+                <option value="5:4">5 : 4</option>
+                <option value="16:9" selected>16 : 9</option>
+                <option value="21:9">21 : 9</option>
+              </select>
+            </div>
+            <div class="field-group field-inline">
+              <label class="field-label" for="gen-size">이미지 규격</label>
+              <select id="gen-size" name="imageSize" class="field-select" data-testid="select-gen-size">
+                <option value="520x292">520 × 292</option>
+                <option value="1280x720" selected>1280 × 720</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- 저장 상태 표시 -->
+          <div id="gen-save-status" class="save-status" hidden></div>
+
+          <!-- 버튼: 저장 | 수정 | 이미지 생성 -->
+          <div class="btn-row">
+            <button type="button" id="btn-gen-save" class="btn btn-teal" data-testid="btn-gen-save">
+              <span class="btn-icon" aria-hidden="true">💾</span>
+              저장
+            </button>
             <button
               type="button"
-              id="btn-clear-file"
-              class="btn-clear-file"
-              aria-label="선택한 이미지 제거"
-              data-testid="btn-clear-file"
-            >✕</button>
+              id="btn-gen-edit"
+              class="btn btn-outline-edit"
+              disabled
+              aria-disabled="true"
+              data-testid="btn-gen-edit"
+            >
+              <span class="btn-icon" aria-hidden="true">✏️</span>
+              수정
+            </button>
+            <button
+              type="button"
+              id="btn-generate"
+              class="btn btn-primary btn-blue"
+              disabled
+              aria-disabled="true"
+              data-testid="btn-generate"
+            >
+              <span class="btn-icon" aria-hidden="true">⚡</span>
+              이미지 생성
+            </button>
+          </div>
+
+        </form>
+      </div><!-- /tab-generate -->
+
+      <!-- ── 탭 2: 이미지 보정 ── -->
+      <div
+        id="tab-correct"
+        class="tab-panel"
+        role="tabpanel"
+        aria-labelledby="tab-btn-correct"
+        hidden
+      >
+        <form id="correct-form" novalidate>
+
+          <!-- 파일 업로드 -->
+          <div class="field-group">
+            <label class="field-label" for="correct-file-input">
+              보정할 이미지 <span class="required-mark" aria-label="필수 입력">*</span>
+            </label>
+            <div
+              id="drop-zone"
+              class="drop-zone"
+              role="button"
+              tabindex="0"
+              aria-label="이미지 파일을 드래그하거나 클릭하여 선택하세요"
+              aria-describedby="drop-zone-hint"
+              data-testid="drop-zone"
+            >
+              <div id="drop-zone-content" class="drop-zone-content">
+                <span class="drop-icon" aria-hidden="true">🖼️</span>
+                <p class="drop-primary">이미지를 드래그하거나 클릭하여 선택</p>
+                <p class="drop-secondary" id="drop-zone-hint">JPG, PNG, WebP, GIF — 최대 20MB</p>
+              </div>
+              <input
+                type="file"
+                id="correct-file-input"
+                name="correctFile"
+                accept="image/*"
+                class="file-input-hidden"
+                aria-label="이미지 파일 선택"
+                data-testid="input-correct-file"
+              />
+            </div>
+            <!-- 이미지 미리보기 -->
+            <div id="preview-container" class="preview-container" hidden>
+              <img
+                id="preview-image"
+                class="preview-image"
+                src=""
+                alt="선택한 이미지 미리보기"
+                data-testid="preview-image"
+              />
+              <button
+                type="button"
+                id="btn-clear-file"
+                class="btn-clear-file"
+                aria-label="선택한 이미지 제거"
+                data-testid="btn-clear-file"
+              >✕</button>
+            </div>
+          </div>
+
+          <!-- 이미지 비율 & 규격 -->
+          <div class="options-row">
+            <div class="field-group field-inline">
+              <label class="field-label" for="cor-ratio">이미지 비율</label>
+              <select id="cor-ratio" name="imageRatio" class="field-select" data-testid="select-cor-ratio">
+                <option value="4:3">4 : 3</option>
+                <option value="5:4">5 : 4</option>
+                <option value="16:9" selected>16 : 9</option>
+                <option value="21:9">21 : 9</option>
+              </select>
+            </div>
+            <div class="field-group field-inline">
+              <label class="field-label" for="cor-size">이미지 규격</label>
+              <select id="cor-size" name="imageSize" class="field-select" data-testid="select-cor-size">
+                <option value="520x292">520 × 292</option>
+                <option value="1280x720" selected>1280 × 720</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- 저장 상태 표시 -->
+          <div id="cor-save-status" class="save-status" hidden></div>
+
+          <!-- 버튼: 저장 | 수정 | 이미지 생성 -->
+          <div class="btn-row">
+            <button type="button" id="btn-cor-save" class="btn btn-teal" data-testid="btn-cor-save">
+              <span class="btn-icon" aria-hidden="true">💾</span>
+              저장
+            </button>
+            <button
+              type="button"
+              id="btn-cor-edit"
+              class="btn btn-outline-edit"
+              disabled
+              aria-disabled="true"
+              data-testid="btn-cor-edit"
+            >
+              <span class="btn-icon" aria-hidden="true">✏️</span>
+              수정
+            </button>
+            <button
+              type="button"
+              id="btn-correct"
+              class="btn btn-primary btn-purple"
+              disabled
+              aria-disabled="true"
+              data-testid="btn-correct"
+            >
+              <span class="btn-icon" aria-hidden="true">⚡</span>
+              이미지 생성
+            </button>
+          </div>
+
+        </form>
+      </div><!-- /tab-correct -->
+
+    </section><!-- /panel-left -->
+
+    <!-- ============================================================
+         RIGHT PANEL (60%) — 이미지 결과 표시
+    ============================================================ -->
+    <section class="panel panel-right" aria-label="이미지 결과 패널">
+
+      <div class="panel-header">
+        <span class="panel-badge badge-green" aria-hidden="true">🖼</span>
+        <h2 class="panel-title">이미지 결과</h2>
+      </div>
+
+      <!-- 플레이스홀더 (초기 상태) -->
+      <div id="right-placeholder" class="right-placeholder">
+        <div class="placeholder-icon" aria-hidden="true">🎨</div>
+        <p class="placeholder-title">이미지가 여기에 표시됩니다</p>
+        <p class="placeholder-desc">왼쪽에서 내용을 입력 후<br>이미지 생성 버튼을 눌러주세요</p>
+      </div>
+
+      <!-- 로딩 상태 -->
+      <div id="right-loading" class="loading-state" hidden aria-busy="true">
+        <div class="spinner" aria-hidden="true"></div>
+        <p class="loading-text">
+          현재 시도 중인 모델:
+          <strong id="right-current-model" class="model-name">—</strong>
+        </p>
+      </div>
+
+      <!-- 에러 상태 -->
+      <div id="right-error" class="error-state" hidden role="alert"></div>
+
+      <!-- 이미지 결과 영역 -->
+      <div id="right-image-area" class="result-area" hidden>
+        <!-- 사용 모델 정보 -->
+        <div id="right-model-info" class="model-info-bar" role="status" aria-live="polite">
+          사용 모델: <span id="right-model-used" class="model-name-inline">—</span>
+        </div>
+        <!-- 결과 이미지 -->
+        <div class="image-container">
+          <img
+            id="right-image"
+            class="result-image"
+            src=""
+            alt="AI가 생성한 이미지"
+            data-testid="result-image"
+          />
+          <!-- 실제 생성 규격 표시 -->
+          <div id="right-image-info" class="image-info-bar" hidden>
+            <span id="right-image-dims"></span>
+          </div>
+          <!-- 프롬프트 표시 (이미지 생성 시) -->
+          <div id="right-prompt-display" class="prompt-display" hidden>
+            <p class="prompt-label">이미지 설명</p>
+            <p id="right-prompt-text" class="prompt-text"></p>
+          </div>
+          <!-- 보정 노트 (이미지 보정 시) -->
+          <div id="right-notes-display" class="correction-notes" hidden>
+            <p class="notes-label">AI 보정 분석 결과</p>
+            <p id="right-notes-text" class="notes-text"></p>
           </div>
         </div>
-
-        <!-- 옵션: 비율 & 규격 -->
-        <div class="options-row">
-          <div class="field-group field-inline">
-            <label class="field-label" for="cor-ratio">이미지 비율</label>
-            <select
-              id="cor-ratio"
-              name="imageRatio"
-              class="field-select"
-              data-testid="select-cor-ratio"
-            >
-              <option value="4:3">4 : 3</option>
-              <option value="5:4">5 : 4</option>
-              <option value="16:9" selected>16 : 9</option>
-              <option value="21:9">21 : 9</option>
-            </select>
-          </div>
-
-          <div class="field-group field-inline">
-            <label class="field-label" for="cor-size">이미지 규격</label>
-            <select
-              id="cor-size"
-              name="imageSize"
-              class="field-select"
-              data-testid="select-cor-size"
-            >
-              <option value="520x292">520 × 292</option>
-              <option value="1280x720" selected>1280 × 720</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- 모델 정보 표시 -->
-        <div
-          id="cor-model-info"
-          class="model-info-bar"
-          role="status"
-          aria-live="polite"
-          aria-label="사용 가능한 모델 정보"
-          hidden
-        ></div>
-
-        <!-- 버튼 영역 -->
-        <div class="btn-row">
-          <button
-            type="submit"
-            id="btn-correct"
-            class="btn btn-primary btn-purple"
-            data-testid="btn-correct"
-          >
-            <span class="btn-icon" aria-hidden="true">✨</span>
-            이미지 보정
-          </button>
+        <!-- 다운로드 버튼 -->
+        <div class="download-row">
           <button
             type="button"
-            id="btn-cor-download"
-            class="btn btn-secondary btn-green"
-            disabled
-            aria-disabled="true"
-            data-testid="btn-cor-download"
+            id="btn-download"
+            class="btn btn-green btn-download-full"
+            data-testid="btn-download"
           >
             <span class="btn-icon" aria-hidden="true">↓</span>
             이미지 다운로드
           </button>
         </div>
+      </div>
 
-        <!-- 결과 영역 -->
-        <div
-          id="cor-result"
-          class="result-area"
-          role="region"
-          aria-label="이미지 보정 결과"
-          aria-live="polite"
-        >
-          <!-- 로딩 상태 -->
-          <div id="cor-loading" class="loading-state" hidden aria-busy="true">
-            <div class="spinner" aria-hidden="true"></div>
-            <p class="loading-text">
-              현재 시도 중인 모델:
-              <strong id="cor-current-model" class="model-name">—</strong>
-            </p>
-          </div>
-
-          <!-- 에러 상태 -->
-          <div id="cor-error" class="error-state" hidden role="alert"></div>
-
-          <!-- 보정된 이미지 -->
-          <div id="cor-image-container" class="image-container" hidden>
-            <img
-              id="cor-image"
-              class="result-image"
-              src=""
-              alt="AI가 보정한 이미지"
-              width="100%"
-              data-testid="cor-result-image"
-            />
-            <!-- 보정 노트 -->
-            <div id="cor-notes-container" class="correction-notes" hidden>
-              <p class="notes-label">AI 보정 분석 결과</p>
-              <p id="cor-notes-text" class="notes-text"></p>
-            </div>
-          </div>
-        </div>
-
-      </form>
-    </section>
+    </section><!-- /panel-right -->
 
   </main>
 
@@ -409,7 +404,10 @@
     <p>AI 이미지 스튜디오 &copy; 2026 Prototype-05 &mdash; Powered by OpenRouter &amp; Supabase</p>
   </footer>
 
-  <!-- 4. App Script (defer) -->
+  <!-- 4. API Key Config (git-ignored) -->
+  <script src="config.js"></script>
+
+  <!-- 5. App Script -->
   <script src="app.js" defer></script>
 </body>
 </html>
