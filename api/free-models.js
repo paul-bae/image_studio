@@ -9,6 +9,10 @@
 
 const OPENROUTER_MODELS_URL = 'https://openrouter.ai/api/v1/models';
 
+/**
+ * Fetch and filter free models from OpenRouter.
+ * @returns {Promise<Object[]>} Array of free model objects.
+ */
 async function fetchFreeModels() {
   const response = await fetch(OPENROUTER_MODELS_URL, {
     method: 'GET',
@@ -25,14 +29,21 @@ async function fetchFreeModels() {
   const data = await response.json();
   const allModels = data.data ?? [];
 
-  return allModels.filter(
+  // Filter to models where both prompt and completion are free (priced at '0').
+  const freeModels = allModels.filter(
     (model) =>
       model.pricing?.prompt === '0' &&
       model.pricing?.completion === '0'
   );
+
+  return freeModels;
 }
 
+/**
+ * Vercel serverless handler.
+ */
 export default async function handler(req, res) {
+  // Handle CORS preflight.
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
@@ -44,6 +55,7 @@ export default async function handler(req, res) {
   try {
     const models = await fetchFreeModels();
 
+    // Return a clean, predictable shape for consumers.
     return res.status(200).json({
       models: models.map((m) => ({
         id: m.id,
