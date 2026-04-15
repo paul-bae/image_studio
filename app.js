@@ -15,17 +15,20 @@ let supabaseClient = null;
 try {
   supabaseClient = window.supabase?.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) ?? null;
 } catch (e) {
-  console.warn('[Supabase] 수정 실패 — DB 저장 비활성화:', e.message);
+  console.warn('[Supabase] 초기화 실패 — DB 저장 비활성화:', e.message);
 }
 
 /* ============================================================
    2. DOM REFERENCES
    ============================================================ */
+
+// ── 탭 ──
 const tabBtnGenerate = document.getElementById('tab-btn-generate');
 const tabBtnCorrect  = document.getElementById('tab-btn-correct');
 const tabGenerate    = document.getElementById('tab-generate');
 const tabCorrect     = document.getElementById('tab-correct');
 
+// ── 이미지 생성 폼 ──
 const generateForm         = document.getElementById('generate-form');
 const courseNameEl         = document.getElementById('course-name');
 const targetAudienceEl     = document.getElementById('target-audience');
@@ -38,6 +41,7 @@ const btnGenSave           = document.getElementById('btn-gen-save');
 const btnGenEdit           = document.getElementById('btn-gen-edit');
 const btnGenerate          = document.getElementById('btn-generate');
 
+// ── 이미지 보정 폼 ──
 const correctForm       = document.getElementById('correct-form');
 const fileInput         = document.getElementById('correct-file-input');
 const dropZone          = document.getElementById('drop-zone');
@@ -51,6 +55,7 @@ const btnCorSave        = document.getElementById('btn-cor-save');
 const btnCorEdit        = document.getElementById('btn-cor-edit');
 const btnCorrect        = document.getElementById('btn-correct');
 
+// ── 오른쪽 패널 ──
 const rightPlaceholder   = document.getElementById('right-placeholder');
 const rightLoading       = document.getElementById('right-loading');
 const rightCurrentModel  = document.getElementById('right-current-model');
@@ -72,6 +77,7 @@ const btnDownload        = document.getElementById('btn-download');
 function setupCharCounter(el, counterId, max) {
   const counter   = document.getElementById(counterId);
   const currentEl = counter.querySelector('.char-current');
+
   function update() {
     const len = el.value.length;
     currentEl.textContent = len.toLocaleString('ko-KR');
@@ -79,6 +85,7 @@ function setupCharCounter(el, counterId, max) {
     counter.classList.toggle('near-limit', ratio >= 0.85 && ratio < 1);
     counter.classList.toggle('at-limit',   ratio >= 1);
   }
+
   el.addEventListener('input', update);
   update();
 }
@@ -91,6 +98,7 @@ setupCharCounter(detailedContentEl,    'detailed-content-counter',    2000);
 /* ============================================================
    4. TAB SWITCHING
    ============================================================ */
+/* 오른쪽 패널 상태 복원 */
 function restoreRightState(state) {
   if (state) {
     showRightImage(state.src, state.modelUsed, {
@@ -129,9 +137,11 @@ function switchTab(tabName) {
 tabBtnGenerate.addEventListener('click', () => switchTab('generate'));
 tabBtnCorrect.addEventListener('click',  () => switchTab('correct'));
 
+/* 폼 기본 제출 방지 */
 generateForm.addEventListener('submit', (e) => e.preventDefault());
 correctForm.addEventListener('submit',  (e) => e.preventDefault());
 
+/* 과정명 입력 시 이미지 생성 버튼 즉시 활성/비활성 */
 courseNameEl.addEventListener('input', () => {
   if (!genSaved) setEnabled(btnGenerate, !!courseNameEl.value.trim());
 });
@@ -172,6 +182,7 @@ function handleFileSelected(file) {
   previewContainer.hidden = false;
   dropZone.hidden = true;
   if (corSaved && corPayload?.file === null) {
+    // DB 복원 상태 — 파일만 업데이트하고 저장 상태 유지
     corPayload = { ...corPayload, file };
     setEnabled(btnCorrect, true);
   } else if (corSaved) {
@@ -209,6 +220,7 @@ function setBusy(btn, busy) {
   btn.setAttribute('aria-disabled', String(busy));
 }
 
+/* ── 오른쪽 패널 상태 ── */
 function showRightLoading(modelName) {
   hideEl(rightPlaceholder);
   showEl(rightLoading);
@@ -231,6 +243,7 @@ function guessRatio(w, h) {
   if (Math.abs(r - 16 / 9)  < 0.05) return '16:9';
   if (Math.abs(r - 5  / 4)  < 0.02) return '5:4';
   if (Math.abs(r - 4  / 3)  < 0.02) return '4:3';
+  // 공약수로 단순화
   const gcd = (a, b) => (b === 0 ? a : gcd(b, a % b));
   const d = gcd(w, h);
   return `${w / d}:${h / d}`;
@@ -243,6 +256,7 @@ function showRightImage(src, modelUsed, { prompt = '', notes = '' } = {}) {
   hideEl(rightImageInfo);
 
   rightImage.onerror = () => {
+    // URL이 만료되었거나 로드 실패 시 (예: Pollinations 캐시 만료)
     hideEl(rightImageArea);
     hideEl(rightImageInfo);
     showRightError('이전 이미지를 불러올 수 없습니다. 이미지 생성 버튼을 눌러 새로 생성해 주세요.');
@@ -278,6 +292,7 @@ function showRightImage(src, modelUsed, { prompt = '', notes = '' } = {}) {
   showEl(rightImageArea);
 }
 
+/* ── 저장 상태 표시 ── */
 function showSaveStatus(el, type, message) {
   el.textContent = message;
   el.className = `save-status save-status-${type}`;
@@ -289,12 +304,14 @@ function hideSaveStatus(el) {
   el.className = 'save-status';
 }
 
+/* ── 이미지 생성 폼 잠금/해제 ── */
 function setGenFormLocked(locked) {
   [courseNameEl, targetAudienceEl, learningObjectivesEl, detailedContentEl, genRatioEl, genSizeEl]
     .forEach(el => { el.disabled = locked; });
   setEnabled(btnGenSave, !locked);
 }
 
+/* ── 이미지 보정 폼 잠금/해제 ── */
 function setCorFormLocked(locked) {
   [corRatioEl, corSizeEl].forEach(el => { el.disabled = locked; });
   if (locked) {
@@ -315,6 +332,7 @@ function setCorFormLocked(locked) {
    7. CLIENT-SIDE API — LLM + IMAGE GENERATION
    ============================================================ */
 
+/* ── Config ── */
 function getConfig() {
   const cfg = window.APP_CONFIG ?? {};
   return {
@@ -324,6 +342,7 @@ function getConfig() {
   };
 }
 
+/* ── OpenRouter: 무료 텍스트 모델 목록 ── */
 async function fetchFreeTextModels(apiKey) {
   const res = await fetch('https://openrouter.ai/api/v1/models', {
     headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' }
@@ -385,8 +404,29 @@ async function callGroqText(prompt, apiKey) {
   throw new Error('LLM 모델 모두 실패');
 }
 
+/* ── 이미지 스타일 상수 ── */
+const IMG_STYLE_PREFIX = 'photorealistic, RAW photo, DSLR 50mm lens, natural lighting, 8K UHD, sharp focus, hyperrealistic, cinematic';
+const IMG_NEGATIVE     = 'text, letters, words, numbers, typography, captions, watermark, logo, signature, label, title, subtitle, heading, illustration, painting, cartoon, anime, drawing, sketch, 3D render, CGI, digital art, pastel, watercolor, oil painting, artistic, stylized, low quality, blurry';
+
+/* ── HF FLUX 이미지 생성 (브라우저 호환 base64) ── */
 function snapDim(n) {
   return Math.min(1280, Math.max(256, Math.round(n / 8) * 8));
+}
+
+async function fetchImageAsBase64(url, fetchOptions = {}) {
+  const res = await fetch(url, fetchOptions);
+  if (!res.ok) {
+    const errText = await res.text().catch(() => '');
+    throw Object.assign(new Error(`HTTP ${res.status}: ${errText.substring(0, 120)}`), { status: res.status });
+  }
+  const buffer = await res.arrayBuffer();
+  const bytes  = new Uint8Array(buffer);
+  let binary   = '';
+  for (let i = 0; i < bytes.length; i += 8192) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + 8192));
+  }
+  const contentType = res.headers.get('content-type') || 'image/jpeg';
+  return `data:${contentType};base64,${btoa(binary)}`;
 }
 
 async function generateImageWithHF(prompt, width, height, hfToken) {
@@ -400,8 +440,11 @@ async function generateImageWithHF(prompt, width, height, hfToken) {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${hfToken}`, 'Content-Type': 'application/json', 'x-use-cache': 'false' },
       body: JSON.stringify({
-        inputs: `${prompt}, professional, high quality, clean educational banner, no text, no letters, no words, no typography, no captions`,
-        parameters: { width: w, height: h, num_inference_steps: 4 },
+        inputs: `${IMG_STYLE_PREFIX}, ${prompt}`,
+        parameters: {
+          width: w, height: h, num_inference_steps: 4,
+          negative_prompt: IMG_NEGATIVE,
+        },
       }),
       signal: AbortSignal.timeout(60_000),
     }
@@ -409,8 +452,8 @@ async function generateImageWithHF(prompt, width, height, hfToken) {
 
   if (!res.ok) {
     const errText = await res.text().catch(() => '');
-    if (res.status === 403) throw new Error('HF 토큰 권한 부족 — Fine-grained 토큰 (Inference Providers 권한) 이 필요합니다');
-    throw new Error(`HF API ${res.status}: ${errText.substring(0, 120)}`);
+    if (res.status === 403) throw Object.assign(new Error('HF 토큰 권한 부족 — Fine-grained 토큰 (Inference Providers 권한) 이 필요합니다'), { status: 403 });
+    throw Object.assign(new Error(`HF API ${res.status}: ${errText.substring(0, 120)}`), { status: res.status });
   }
 
   const buffer = await res.arrayBuffer();
@@ -424,14 +467,48 @@ async function generateImageWithHF(prompt, width, height, hfToken) {
   return `data:${contentType};base64,${btoa(binary)}`;
 }
 
+/* ── Pollinations.ai 이미지 생성 (무료, 인증 불필요) ── */
+async function generateImageWithPollinations(prompt, width, height) {
+  const w = snapDim(width), h = snapDim(height);
+  const seed = Math.floor(Math.random() * 9_999_999);
+  const fullPrompt = `${IMG_STYLE_PREFIX}, ${prompt}`;
+  const params = new URLSearchParams({
+    width: w, height: h, seed, model: 'flux-realism', nologo: 'true',
+    negative: IMG_NEGATIVE,
+    enhance: 'false',
+  });
+  const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(fullPrompt)}?${params}`;
+  console.log(`[Pollinations] flux-realism — ${w}x${h}`);
+  return fetchImageAsBase64(url, { signal: AbortSignal.timeout(90_000) });
+}
+
+/* ── 통합 이미지 생성: HF → Pollinations 폴백 ── */
+async function generateImage(prompt, width, height, hfToken) {
+  try {
+    return await generateImageWithHF(prompt, width, height, hfToken);
+  } catch (hfErr) {
+    const code = hfErr.status;
+    // 402(크레딧 소진), 429(요청 초과), 503(서비스 불가) → Pollinations로 폴백
+    if (code === 402 || code === 429 || code === 503 || code === 500) {
+      console.warn(`[HF] ${code} 오류 — Pollinations 폴백`, hfErr.message);
+      return generateImageWithPollinations(prompt, width, height);
+    }
+    throw hfErr;
+  }
+}
+
+/* ── LLM 프롬프트 빌더 ── */
 function buildGeneratePrompt({ courseName, targetAudience, objectives, content, ratio }) {
   return (
-    'You are an expert at creating image generation prompts for educational content.\n' +
+    'You are an expert at writing prompts for photorealistic image generation AI models.\n' +
     'Return a JSON object with exactly two fields:\n' +
-    '  "prompt": A detailed English image generation prompt for a professional educational course banner.\n' +
-    '  "description": A concise Korean description (2-3 sentences) of what the generated image will look like.\n' +
-    'The prompt should produce a visually appealing, modern, professional educational banner.\n' +
-    'IMPORTANT: The image must contain NO text, no letters, no words, no numbers, no captions — purely visual elements only.\n' +
+    '  "prompt": scene description in English for a professional educational banner image.\n' +
+    '  "description": a concise Korean description (2-3 sentences) of the scene.\n' +
+    'Rules for "prompt":\n' +
+    '  - Describe ONLY the scene/subject/environment (people, objects, nature, setting, mood, composition).\n' +
+    '  - Do NOT include style words like "photorealistic" or "DSLR" — those are added automatically.\n' +
+    '  - The scene must be purely visual: absolutely NO text, letters, words, numbers, signs, or captions in the scene.\n' +
+    '  - No logos, no whiteboards, no books with visible text, no screens showing text.\n' +
     'Return ONLY the raw JSON object — no markdown fences, no extra text.\n\n' +
     `Course: ${courseName}\nTarget Audience: ${targetAudience}\nObjectives: ${objectives}\nContent: ${content}\nAspect Ratio: ${ratio}`
   );
@@ -442,6 +519,7 @@ function parseSizeStr(sizeStr) {
   return { width: parts[0] > 0 ? parts[0] : 1280, height: parts[1] > 0 ? parts[1] : 720 };
 }
 
+/* ── callGenerate (클라이언트 직접 호출) ── */
 async function callGenerate({ courseName, targetAudience, objectives, content, ratio, size }) {
   const { openrouterKey, groqKey, hfToken } = getConfig();
 
@@ -480,10 +558,11 @@ async function callGenerate({ courseName, targetAudience, objectives, content, r
   } catch { /* raw text 그대로 사용 */ }
 
   const { width, height } = parseSizeStr(size ?? '1280x720');
-  const imageData = await generateImageWithHF(imagePrompt, width, height, hfToken);
+  const imageData = await generateImage(imagePrompt, width, height, hfToken);
   return { imageData, prompt: imagePrompt, koreanDescription, modelUsed };
 }
 
+/* ── OpenRouter: 무료 비전 모델 목록 ── */
 async function fetchFreeVisionModels(apiKey) {
   const res = await fetch('https://openrouter.ai/api/v1/models', {
     headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' }
@@ -531,6 +610,7 @@ async function tryVisionModels(models, imageBase64, prompt, apiKey) {
 }
 
 async function callGroqVision(imageBase64, prompt, apiKey) {
+  // 최신 순으로 시도 — 모델 deprecated 시 자동으로 다음 모델로 폴백
   const GROQ_VISION_MODELS = [
     'meta-llama/llama-4-scout-17b-16e-instruct',
     'meta-llama/llama-4-maverick-17b-128e-instruct',
@@ -566,6 +646,10 @@ async function callGroqVision(imageBase64, prompt, apiKey) {
   throw new Error('All Groq vision models failed');
 }
 
+/**
+ * 비전 API 전송 전 이미지를 최대 1024px 로 축소한다.
+ * 이미 작으면 원본 그대로 반환.
+ */
 function resizeForVision(dataUrl, maxDim = 1024) {
   return new Promise((resolve) => {
     const img = new Image();
@@ -593,6 +677,7 @@ function parseVisionJson(raw) {
   return null;
 }
 
+/* ── callCorrect (클라이언트 직접 호출) ── */
 async function callCorrect({ imageBase64, imageName, ratio, size }) {
   const { openrouterKey, groqKey, hfToken } = getConfig();
   const { width, height } = parseSizeStr(size ?? '1280x720');
@@ -605,11 +690,13 @@ async function callCorrect({ imageBase64, imageName, ratio, size }) {
     '1. "description": 이미지 내용에 대한 간략한 한국어 설명\n' +
     '2. "suggestions": 교육 자료로 개선할 수 있는 한국어 제안사항\n' +
     '3. "improvedPrompt": 개선된 이미지를 생성하기 위한 상세한 영어 프롬프트 (English only)\n\n' +
+    'For "improvedPrompt": describe ONLY the scene/subject. Do NOT include style words (photorealistic, DSLR etc.) — those are added automatically. The scene must have absolutely no text, letters, signs, or visible words.\n' +
     'Return ONLY a raw JSON object (no markdown fences): { "description": "한국어...", "suggestions": "한국어...", "improvedPrompt": "English..." }';
 
   let improvedPrompt = null, correctionNotes = '', modelUsed = 'none';
 
   if (hasValidImage) {
+    // 비전 API 페이로드 감소: 최대 1024px 로 축소 후 전송
     const visionImage = await resizeForVision(imageBase64);
     console.log(`[correct] vision image size: ${Math.round(visionImage.length / 1024)} KB (after resize)`);
 
@@ -641,9 +728,9 @@ async function callCorrect({ imageBase64, imageName, ratio, size }) {
   }
 
   const finalPrompt = improvedPrompt?.trim() ||
-    `Professional educational image, ${ratio ?? '16:9'} aspect ratio, modern design, clean and bright`;
+    `Photorealistic professional educational image, ${ratio ?? '16:9'} aspect ratio, DSLR photography, natural lighting, ultra-detailed`;
 
-  const correctedImageData = await generateImageWithHF(finalPrompt, width, height, hfToken);
+  const correctedImageData = await generateImage(finalPrompt, width, height, hfToken);
   return { correctedImageData, correctionNotes: correctionNotes || '이미지 분석 없이 기본 프롬프트로 재생성되었습니다.', modelUsed };
 }
 
@@ -678,6 +765,19 @@ async function insertCorRecord(data) {
   return record;
 }
 
+/**
+ * 원본 이미지를 Supabase Storage(correction-images)에 업로드하고 공개 URL을 반환한다.
+ * @param {File} file
+ * @param {string} recordId  — DB 레코드 ID (파일명 중복 방지용)
+ * @returns {Promise<string>} 공개 URL
+ */
+/**
+ * base64 data URL을 Supabase Storage에 업로드하고 공개 URL을 반환한다.
+ * @param {string} dataUrl  — "data:image/jpeg;base64,..." 형식
+ * @param {string} bucket   — 버킷 이름
+ * @param {string} path     — 저장 경로 (예: "abc123.jpg")
+ * @returns {Promise<string>} 공개 URL
+ */
 async function uploadDataUrlToStorage(dataUrl, bucket, path) {
   const res  = await fetch(dataUrl);
   const blob = await res.blob();
@@ -709,6 +809,8 @@ async function updateCorRecord(id, updates) {
 /* ============================================================
    9. CANVAS HELPERS — RESIZE & COMPRESS
    ============================================================ */
+
+
 function resizeImageWithCanvas(srcUrl, targetW, targetH) {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -752,6 +854,7 @@ function fileToBase64(file) {
 
 async function downloadImage(src, filename = 'image.png') {
   try {
+    // 1. src → Blob 변환
     let blob;
     if (src.startsWith('data:')) {
       blob = await (await fetch(src)).blob();
@@ -765,6 +868,7 @@ async function downloadImage(src, filename = 'image.png') {
       }
     }
 
+    // 2. File System Access API — 폴더·파일명 선택 다이얼로그 (Chrome/Edge)
     if (window.showSaveFilePicker) {
       const ext  = filename.split('.').pop().toLowerCase();
       const mime = { jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp' }[ext]
@@ -779,6 +883,7 @@ async function downloadImage(src, filename = 'image.png') {
       return;
     }
 
+    // 3. 폴백 — <a> 태그 다운로드 (Firefox·Safari 등 미지원 브라우저)
     const href = URL.createObjectURL(blob);
     const a    = document.createElement('a');
     a.href     = href;
@@ -789,7 +894,7 @@ async function downloadImage(src, filename = 'image.png') {
     document.body.removeChild(a);
     setTimeout(() => URL.revokeObjectURL(href), 10_000);
   } catch (err) {
-    if (err.name === 'AbortError') return;
+    if (err.name === 'AbortError') return; // 사용자가 다이얼로그 취소
     alert(`다운로드 실패: ${err.message}`);
   }
 }
@@ -797,8 +902,10 @@ async function downloadImage(src, filename = 'image.png') {
 /* ============================================================
    11. 이미지 생성 — 저장 / 수정 / 이미지 생성
    ============================================================ */
-let genRightState = null;
-let corRightState = null;
+
+/* 탭별 오른쪽 패널 상태 (탭 전환 시 복원용) */
+let genRightState = null;  // { src, modelUsed, prompt }
+let corRightState = null;  // { src, modelUsed, notes }
 
 let genSaved    = false;
 let genPayload  = null;
@@ -814,6 +921,7 @@ function resetGenSaveState() {
   hideSaveStatus(genSaveStatusEl);
 }
 
+/* 저장 버튼 */
 btnGenSave.addEventListener('click', () => {
   const courseName = courseNameEl.value.trim();
   if (!courseName) {
@@ -837,6 +945,7 @@ btnGenSave.addEventListener('click', () => {
   setEnabled(btnGenEdit, true);
   setEnabled(btnGenerate, true);
 
+  // 백그라운드 Supabase 저장
   insertGenRecord({
     course_name:         genPayload.courseName,
     target_audience:     genPayload.targetAudience,
@@ -849,10 +958,12 @@ btnGenSave.addEventListener('click', () => {
   }).catch(err => console.warn('[Supabase] gen 저장 실패:', err.message));
 });
 
+/* 수정 버튼 */
 btnGenEdit.addEventListener('click', () => {
   resetGenSaveState();
 });
 
+/* 이미지 생성 버튼 */
 btnGenerate.addEventListener('click', async () => {
   const courseName = genPayload?.courseName ?? courseNameEl.value.trim();
   if (!courseName) return;
@@ -866,7 +977,7 @@ btnGenerate.addEventListener('click', async () => {
     imageSize:          genSizeEl.value,
   };
 
-  showRightLoading('이미지 생성 중...');
+  showRightLoading('HF FLUX → Pollinations 순서로 시도 중...');
   setBusy(btnGenerate, true);
   setBusy(btnGenEdit,  true);
 
@@ -881,6 +992,8 @@ btnGenerate.addEventListener('click', async () => {
     });
 
     const { imageData, prompt, koreanDescription, modelUsed } = result;
+
+    // 서버에서 받은 원본 base64를 그대로 사용
     const finalSrc      = imageData;
     const displayPrompt = koreanDescription || prompt;
 
@@ -888,18 +1001,20 @@ btnGenerate.addEventListener('click', async () => {
     showRightImage(finalSrc, modelUsed, { prompt: displayPrompt });
     btnDownload.onclick = () => downloadImage(finalSrc, `generated_${Date.now()}.jpg`);
 
+    // 백그라운드: Storage 업로드 → image_url + ai_prompt + model_used 저장
     if (genRecordId && supabaseClient) {
       const snapId     = genRecordId;
       const snapSrc    = finalSrc;
       const snapPrompt = prompt || '';
+      const snapModel  = modelUsed || '';
       (async () => {
         try {
           const ext = snapSrc.split(';')[0].split('/')[1] || 'jpg';
           const url = await uploadDataUrlToStorage(snapSrc, 'generated-images', `${snapId}.${ext}`);
-          await updateGenRecord(snapId, { image_url: url, ai_prompt: snapPrompt });
+          await updateGenRecord(snapId, { image_url: url, ai_prompt: snapPrompt, model_used: snapModel });
         } catch (e) {
           console.warn('[Storage] 생성 이미지 업로드 실패:', e.message);
-          updateGenRecord(snapId, { ai_prompt: snapPrompt });
+          updateGenRecord(snapId, { ai_prompt: snapPrompt, model_used: snapModel });
         }
       })();
     }
@@ -930,6 +1045,7 @@ function resetCorSaveState() {
   hideSaveStatus(corSaveStatusEl);
 }
 
+/* 저장 버튼 */
 btnCorSave.addEventListener('click', () => {
   if (!selectedFile) {
     showSaveStatus(corSaveStatusEl, 'error', '⚠ 보정할 이미지를 선택해 주세요.');
@@ -948,6 +1064,7 @@ btnCorSave.addEventListener('click', () => {
   setEnabled(btnCorEdit, true);
   setEnabled(btnCorrect, true);
 
+  // 백그라운드: DB 저장 → Storage 업로드 → URL 업데이트
   const fileSnapshot = selectedFile;
   insertCorRecord({
     original_image_name: fileSnapshot.name,
@@ -967,17 +1084,19 @@ btnCorSave.addEventListener('click', () => {
   }).catch(err => console.warn('[Supabase] cor 저장 실패:', err.message));
 });
 
+/* 수정 버튼 */
 btnCorEdit.addEventListener('click', () => {
   resetCorSaveState();
 });
 
+/* 이미지 생성 버튼 (보정) */
 btnCorrect.addEventListener('click', async () => {
   const file       = corPayload?.file       ?? selectedFile;
   const imageRatio = corPayload?.imageRatio ?? corRatioEl.value;
   const imageSize  = corPayload?.imageSize  ?? corSizeEl.value;
   if (!file) return;
 
-  showRightLoading('이미지 분석 중...');
+  showRightLoading('이미지 분석 → HF FLUX → Pollinations 순서로 시도 중...');
   setBusy(btnCorrect, true);
   setBusy(btnCorEdit, true);
 
@@ -992,23 +1111,26 @@ btnCorrect.addEventListener('click', async () => {
     });
 
     const { correctedImageData, correctionNotes, modelUsed } = result;
+
     const finalSrc = correctedImageData;
     corRightState = { src: finalSrc, modelUsed, notes: correctionNotes };
     showRightImage(finalSrc, modelUsed, { notes: correctionNotes });
     btnDownload.onclick = () => downloadImage(finalSrc, `corrected_${Date.now()}.png`);
 
+    // 백그라운드: Storage 업로드 → corrected_image_url + correction_notes 저장
     if (corRecordId && supabaseClient) {
       const snapId    = corRecordId;
       const snapSrc   = finalSrc;
       const snapNotes = correctionNotes || '';
+      const snapModel = modelUsed || '';
       (async () => {
         try {
           const ext = snapSrc.split(';')[0].split('/')[1] || 'png';
           const url = await uploadDataUrlToStorage(snapSrc, 'correction-images', `corrected_${snapId}.${ext}`);
-          await updateCorRecord(snapId, { corrected_image_url: url, correction_notes: snapNotes });
+          await updateCorRecord(snapId, { corrected_image_url: url, correction_notes: snapNotes, model_used: snapModel });
         } catch (e) {
           console.warn('[Storage] 보정 이미지 업로드 실패:', e.message);
-          updateCorRecord(snapId, { correction_notes: snapNotes });
+          updateCorRecord(snapId, { correction_notes: snapNotes, model_used: snapModel });
         }
       })();
     }
@@ -1039,6 +1161,7 @@ async function loadLatestGenRecord() {
     const rec = data[0];
     if (!rec.course_name) return;
 
+    // 상태 먼저 설정 (input 이벤트 리스너가 중복 동작하지 않도록)
     genRecordId = rec.id;
     genSaved    = true;
     genPayload  = {
@@ -1050,6 +1173,7 @@ async function loadLatestGenRecord() {
       imageSize:          rec.image_size          ?? '1280x720',
     };
 
+    // 폼 값 복원
     courseNameEl.value         = genPayload.courseName;
     targetAudienceEl.value     = genPayload.targetAudience;
     learningObjectivesEl.value = genPayload.learningObjectives;
@@ -1057,17 +1181,20 @@ async function loadLatestGenRecord() {
     genRatioEl.value           = genPayload.imageRatio;
     genSizeEl.value            = genPayload.imageSize;
 
+    // 글자 수 카운터 갱신 (synthetic input 이벤트로 트리거)
     [courseNameEl, targetAudienceEl, learningObjectivesEl, detailedContentEl]
       .forEach(el => el.dispatchEvent(new Event('input')));
 
+    // 폼 잠금 & 버튼 상태
     setGenFormLocked(true);
     setEnabled(btnGenEdit,  true);
     setEnabled(btnGenerate, true);
     showSaveStatus(genSaveStatusEl, 'saved', `✓ 불러온 데이터 — ${genPayload.courseName}`);
 
+    // 이전에 생성된 이미지가 있으면 오른쪽 패널에 표시 (생성 탭이 활성인 경우에만)
     if (rec.image_url) {
-      genRightState = { src: rec.image_url, modelUsed: '이전 생성 결과', prompt: rec.ai_prompt || '' };
-      restoreRightState(genRightState);
+      genRightState = { src: rec.image_url, modelUsed: rec.model_used || '이전 생성 결과', prompt: rec.ai_prompt || '' };
+      if (tabBtnGenerate.classList.contains('tab-active')) restoreRightState(genRightState);
     }
   } catch (err) {
     console.warn('[loadLatestGenRecord]', err.message);
@@ -1087,19 +1214,22 @@ async function loadLatestCorRecord() {
     const rec = data[0];
     if (!rec.original_image_name && !rec.image_ratio && !rec.image_size) return;
 
+    // 상태 복원
     corRecordId = rec.id;
     corSaved    = true;
     corPayload  = {
-      file:       null,
+      file:       null,   // 파일은 복원 불가 — 재선택 필요
       imageRatio: rec.image_ratio ?? '16:9',
       imageSize:  rec.image_size  ?? '1280x720',
     };
 
+    // 비율·규격 셀렉트 복원
     corRatioEl.value = corPayload.imageRatio;
     corSizeEl.value  = corPayload.imageSize;
 
     const label = rec.original_image_name || '이전 이미지';
 
+    // 원본 이미지 URL이 있으면 fetch → Blob → File 로 복원해 미리보기 표시
     if (rec.original_image_url) {
       try {
         const res = await fetch(rec.original_image_url);
@@ -1107,6 +1237,7 @@ async function loadLatestCorRecord() {
           const blob = await res.blob();
           const ext  = (rec.original_image_name || 'image.jpg').split('.').pop();
           const file = new File([blob], rec.original_image_name || `image.${ext}`, { type: blob.type });
+          // handleFileSelected 대신 직접 미리보기만 세팅 (저장 상태 유지)
           selectedFile     = file;
           corPayload.file  = file;
           previewImage.src        = URL.createObjectURL(blob);
@@ -1118,22 +1249,24 @@ async function loadLatestCorRecord() {
       }
     }
 
+    // 셀렉트 잠금 (드롭존은 파일이 복원됐으면 숨겨진 상태)
     corRatioEl.disabled = true;
     corSizeEl.disabled  = true;
     setEnabled(btnCorSave, false);
     setEnabled(btnCorEdit, true);
-    setEnabled(btnCorrect, !!corPayload.file);
+    setEnabled(btnCorrect, !!corPayload.file);  // 파일 복원 성공 시 바로 활성화
 
     showSaveStatus(corSaveStatusEl, 'saved',
       `✓ 불러온 데이터 — ${label} · ${corPayload.imageRatio} · ${corPayload.imageSize}`);
 
+    // 보정 이미지가 있으면 오른쪽 패널 복원 (보정 탭이 활성인 경우에만)
     if (rec.corrected_image_url) {
       corRightState = {
         src:       rec.corrected_image_url,
-        modelUsed: '이전 보정 결과',
+        modelUsed: rec.model_used || '이전 보정 결과',
         notes:     rec.correction_notes || '',
       };
-      restoreRightState(corRightState);
+      if (tabBtnCorrect.classList.contains('tab-active')) restoreRightState(corRightState);
     }
   } catch (err) {
     console.warn('[loadLatestCorRecord]', err.message);
