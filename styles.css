@@ -1,10 +1,11 @@
 /* ============================================================
    AI 이미지 스튜디오 — Custom Styles
-   Design: 밝고 트렌디하고 산뜻한 파스텔 그라디언트 컨셉
+   Design: 밝고 트렌디하고 산뜻한 파스텔 그라디언트 콘셉
    ============================================================ */
 
-/* ── 1. CSS 변수 (컨러 팔레트 & 디자인 토큰) ──────────────── */
+/* ── 1. CSS 변수 (콜러 팔레트 & 디자인 토큰) ──────────────── */
 :root {
+  /* 그라디언트 팔레트 */
   --grad-header-from: #667eea;
   --grad-header-to:   #764ba2;
   --grad-title-from:  #f8f9ff;
@@ -17,6 +18,7 @@
   --grad-green-from:  #10b981;
   --grad-green-to:    #059669;
 
+  /* 파스텔 배경 */
   --bg-body:          #f0f4ff;
   --bg-panel:         #ffffff;
   --bg-field:         #f8f9ff;
@@ -26,12 +28,14 @@
   --bg-notes:         #f5f3ff;
   --bg-prompt:        #faf5ff;
 
+  /* 테두리 */
   --border-default:   #e2e8f0;
   --border-focus:     #7c3aed;
   --border-drop:      #c4b5fd;
   --border-drop-over: #7c3aed;
   --border-error:     #fda4af;
 
+  /* 텍스트 */
   --text-primary:     #1e1b4b;
   --text-secondary:   #6b7280;
   --text-muted:       #9ca3af;
@@ -41,6 +45,7 @@
   --text-blue:        #1d4ed8;
   --text-green:       #065f46;
 
+  /* 레이아웃 */
   --header-height:    76px;
   --panel-gap:        16px;
   --panel-padding:    32px;
@@ -51,10 +56,12 @@
                       0 1px 4px  rgba(0, 0, 0, 0.06);
   --shadow-btn:       0 4px 12px rgba(0,0,0,0.15);
 
+  /* 트랜지션 */
   --transition-fast:  150ms ease;
   --transition-base:  250ms ease;
 }
 
+/* ── 2. 리셋 & 베이스 ──────────────────────────────────── */
 *,
 *::before,
 *::after {
@@ -82,6 +89,7 @@ body {
   flex-direction: column;
 }
 
+/* ── 3. 헤더 ───────────────────────────────────────────── */
 .app-header {
   background: linear-gradient(135deg, var(--grad-header-from) 0%, var(--grad-header-to) 100%);
   padding: 18px 32px;
@@ -97,6 +105,7 @@ body {
   gap: 2px;
 }
 
+/* 그라디언트 텍스트 타이틀 */
 .app-title {
   font-size: 1.75rem;
   font-weight: 800;
@@ -115,16 +124,18 @@ body {
   letter-spacing: 0.01em;
 }
 
+/* ── 4. 메인 레이아웃 (40:60 분할) ──────────────────── */
 .main-layout {
   display: grid;
-  grid-template-columns: 2fr 3fr;
+  grid-template-columns: 2fr 3fr;   /* 40% : 60% */
   gap: var(--panel-gap);
   padding: 20px var(--panel-gap);
   width: 100%;
   flex: 1;
-  align-items: stretch;
+  align-items: stretch;  /* 두 패널이 동일한 행 높이를 공유 */
 }
 
+/* ── 5. 패널 카드 ───────────────────────────────────────── */
 .panel {
   background: var(--bg-panel);
   border-radius: var(--radius-card);
@@ -138,6 +149,7 @@ body {
   -webkit-backdrop-filter: blur(8px);
 }
 
+/* 왼쪽 패널: 콘텐츠가 넘칠 때 내부 스크롤 */
 .panel-left {
   overflow-y: auto;
 }
@@ -151,8 +163,12 @@ body {
   border-bottom: 2px solid var(--bg-body);
 }
 
-.panel-badge { font-size: 1.1rem; line-height: 1; }
-.badge-blue   { color: var(--grad-blue-from); }
+.panel-badge {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.badge-blue  { color: var(--grad-blue-from); }
 .badge-purple { color: var(--grad-purple-from); }
 
 .panel-title {
@@ -162,6 +178,7 @@ body {
   letter-spacing: -0.02em;
 }
 
+/* ── 6. 폼 필드 공통 ──────────────────────────────────────── */
 .field-group {
   display: flex;
   flex-direction: column;
@@ -189,12 +206,15 @@ body {
   margin-top: 2px;
 }
 
-.textarea-wrapper { position: relative; }
+/* textarea */
+.textarea-wrapper {
+  position: relative;
+}
 
 .field-textarea {
   width: 100%;
   padding: 12px 14px;
-  padding-bottom: 22px;
+  padding-bottom: 22px;       /* 카운터 공간 확보 */
   background: var(--bg-field);
   border: 1.5px solid var(--border-default);
   border-radius: var(--radius-field);
@@ -203,7 +223,8 @@ body {
   resize: vertical;
   line-height: 1.6;
   font-family: inherit;
-  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  transition: border-color var(--transition-fast),
+              box-shadow var(--transition-fast);
 }
 
 .field-textarea:focus {
@@ -215,9 +236,10 @@ body {
 
 .field-textarea::placeholder { color: var(--text-muted); }
 
+/* 한 줄 텍스트 입력 (과정명) */
 .field-input {
   width: 100%;
-  padding: 10px 90px 10px 14px;
+  padding: 10px 90px 10px 14px; /* 오른쪽 카운터 공간 확보 */
   background: var(--bg-field);
   border: 1.5px solid var(--border-default);
   border-radius: var(--radius-field);
@@ -225,7 +247,8 @@ body {
   color: var(--text-primary);
   font-family: inherit;
   line-height: 1.5;
-  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  transition: border-color var(--transition-fast),
+              box-shadow var(--transition-fast);
 }
 
 .field-input:focus {
@@ -237,6 +260,7 @@ body {
 
 .field-input::placeholder { color: var(--text-muted); }
 
+/* 문자수 카운터 */
 .char-counter {
   position: absolute;
   bottom: 8px;
@@ -247,16 +271,22 @@ body {
   user-select: none;
 }
 
+/* 한 줄 입력 전용: 세로 중앙 정렬 */
 .char-counter-inline {
   top: 50%;
   bottom: auto;
   transform: translateY(-50%);
 }
 
-.char-counter .char-current { font-weight: 600; color: var(--text-secondary); }
-.char-counter.near-limit .char-current { color: #f59e0b; }
-.char-counter.at-limit   .char-current { color: #ef4444; }
+.char-counter .char-current {
+  font-weight: 600;
+  color: var(--text-secondary);
+}
 
+.char-counter.near-limit .char-current  { color: #f59e0b; }
+.char-counter.at-limit   .char-current  { color: #ef4444; }
+
+/* select */
 .field-select {
   width: 100%;
   padding: 10px 14px;
@@ -273,7 +303,8 @@ body {
   background-repeat: no-repeat;
   background-position: right 14px center;
   padding-right: 36px;
-  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  transition: border-color var(--transition-fast),
+              box-shadow var(--transition-fast);
 }
 
 .field-select:focus {
@@ -282,6 +313,7 @@ body {
   box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12);
 }
 
+/* 옵션 행 (비율 + 규격 나란히) */
 .options-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -291,6 +323,7 @@ body {
 
 .field-inline { margin-bottom: 0; }
 
+/* ── 7. 버튼 ────────────────────────────────────────────── */
 .btn-row {
   display: flex;
   gap: 12px;
@@ -309,7 +342,9 @@ body {
   font-weight: 700;
   font-family: inherit;
   cursor: pointer;
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast), opacity var(--transition-fast);
+  transition: transform var(--transition-fast),
+              box-shadow var(--transition-fast),
+              opacity var(--transition-fast);
   white-space: nowrap;
   letter-spacing: -0.01em;
   position: relative;
@@ -327,19 +362,44 @@ body {
 .btn:hover:not(:disabled)::after  { background: rgba(255,255,255,0.12); }
 .btn:active:not(:disabled)::after { background: rgba(0,0,0,0.08); }
 
-.btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: var(--shadow-btn); }
-.btn:active:not(:disabled) { transform: translateY(0); }
+.btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-btn);
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(0);
+}
 
 .btn:focus-visible {
   outline: 3px solid rgba(124, 58, 237, 0.5);
   outline-offset: 3px;
 }
 
-.btn-blue   { background: linear-gradient(135deg, var(--grad-blue-from), var(--grad-blue-to)); color: #ffffff; box-shadow: 0 2px 10px rgba(79, 142, 247, 0.35); }
-.btn-purple { background: linear-gradient(135deg, var(--grad-purple-from), var(--grad-purple-to)); color: #ffffff; box-shadow: 0 2px 10px rgba(147, 51, 234, 0.35); }
-.btn-green  { background: linear-gradient(135deg, var(--grad-green-from), var(--grad-green-to)); color: #ffffff; box-shadow: 0 2px 10px rgba(16, 185, 129, 0.30); }
+/* Primary Blue (이미지 생성) */
+.btn-blue {
+  background: linear-gradient(135deg, var(--grad-blue-from), var(--grad-blue-to));
+  color: #ffffff;
+  box-shadow: 0 2px 10px rgba(79, 142, 247, 0.35);
+}
 
-.btn:disabled, .btn[aria-disabled="true"] {
+/* Primary Purple (이미지 보정) */
+.btn-purple {
+  background: linear-gradient(135deg, var(--grad-purple-from), var(--grad-purple-to));
+  color: #ffffff;
+  box-shadow: 0 2px 10px rgba(147, 51, 234, 0.35);
+}
+
+/* Secondary Green (다운로드) */
+.btn-green {
+  background: linear-gradient(135deg, var(--grad-green-from), var(--grad-green-to));
+  color: #ffffff;
+  box-shadow: 0 2px 10px rgba(16, 185, 129, 0.30);
+}
+
+/* Disabled 상태 */
+.btn:disabled,
+.btn[aria-disabled="true"] {
   opacity: 0.42;
   cursor: not-allowed;
   transform: none !important;
@@ -349,6 +409,7 @@ body {
 
 .btn-icon { font-size: 1rem; }
 
+/* ── 8. 모델 정보 바 ───────────────────────────────────────── */
 .model-info-bar {
   background: var(--bg-model-info);
   border: 1.5px solid #bfdbfe;
@@ -363,21 +424,28 @@ body {
   gap: 8px;
 }
 
-.model-info-bar::before { content: '⚡'; font-size: 0.9rem; }
+.model-info-bar::before {
+  content: '⚡';
+  font-size: 0.9rem;
+}
 
-.result-area { margin-top: 4px; }
+/* ── 9. 결과 영역 ─────────────────────────────────────────── */
+.result-area {
+  margin-top: 4px;
+}
 
+/* 로딩 스피너 */
 .loading-state {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: center;  /* 세로 중앙 정렬 */
   gap: 16px;
   padding: 20px;
   background: linear-gradient(135deg, #f8f5ff, #eff6ff);
   border-radius: 14px;
   border: 1.5px dashed #c4b5fd;
-  flex: 1;
+  flex: 1;      /* result-area 남은 공간 체움 */
   min-height: 0;
 }
 
@@ -391,7 +459,9 @@ body {
   flex-shrink: 0;
 }
 
-@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
 
 .loading-text {
   font-size: 0.875rem;
@@ -400,8 +470,13 @@ body {
   line-height: 1.5;
 }
 
-.model-name { color: var(--text-model); font-weight: 700; word-break: break-all; }
+.model-name {
+  color: var(--text-model);
+  font-weight: 700;
+  word-break: break-all;
+}
 
+/* 에러 상태 */
 .error-state {
   background: var(--bg-error);
   border: 1.5px solid var(--border-error);
@@ -416,21 +491,29 @@ body {
   line-height: 1.55;
 }
 
-.error-state::before { content: '⚠'; font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
+.error-state::before {
+  content: '⚠';
+  font-size: 1.1rem;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
 
+/* 이미지 컨테이너 */
 .image-container {
   border-radius: 14px;
   overflow: hidden;
-  box-shadow: 0 6px 28px rgba(102, 126, 234, 0.22), 0 2px 8px rgba(0,0,0,0.10);
+  box-shadow: 0 6px 28px rgba(102, 126, 234, 0.22),
+              0 2px 8px rgba(0,0,0,0.10);
 }
 
 .result-image {
   display: block;
-  max-width: 100%;
-  height: auto;
+  max-width: 100%;   /* 패널보다 넓으면 축소, 원본보다 크게 늘리지 않음 */
+  height: auto;      /* 가로 기준으로 비율 유지 */
   border-radius: 14px 14px 0 0;
 }
 
+/* 실제 생성 규격 표시 */
 .image-info-bar {
   background: #f8fafc;
   border-top: 1px solid #e2e8f0;
@@ -441,6 +524,7 @@ body {
   letter-spacing: 0.02em;
 }
 
+/* 프롬프트 표시 */
 .prompt-display {
   background: var(--bg-prompt);
   padding: 8px 12px;
@@ -463,6 +547,7 @@ body {
   word-break: break-all;
 }
 
+/* 보정 노트 */
 .correction-notes {
   background: var(--bg-notes);
   padding: 8px 12px;
@@ -486,6 +571,7 @@ body {
   word-break: break-word;
 }
 
+/* ── 10. 드래그앤드롭 영역 ────────────────────────────────── */
 .drop-zone {
   position: relative;
   border: 2px dashed var(--border-drop);
@@ -494,10 +580,13 @@ body {
   padding: 36px 20px;
   text-align: center;
   cursor: pointer;
-  transition: border-color var(--transition-base), background var(--transition-base), transform var(--transition-fast);
+  transition: border-color var(--transition-base),
+              background var(--transition-base),
+              transform var(--transition-fast);
 }
 
-.drop-zone:hover, .drop-zone:focus-within {
+.drop-zone:hover,
+.drop-zone:focus-within {
   border-color: var(--border-drop-over);
   background: #ede9fe;
   transform: scale(1.005);
@@ -524,10 +613,20 @@ body {
   pointer-events: none;
 }
 
-.drop-icon    { font-size: 2.5rem; line-height: 1; }
-.drop-primary { font-size: 0.9rem; font-weight: 600; color: #5b21b6; }
-.drop-secondary { font-size: 0.775rem; color: var(--text-muted); }
+.drop-icon  { font-size: 2.5rem; line-height: 1; }
 
+.drop-primary {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #5b21b6;
+}
+
+.drop-secondary {
+  font-size: 0.775rem;
+  color: var(--text-muted);
+}
+
+/* 숨겨진 파일 입력 */
 .file-input-hidden {
   position: absolute;
   inset: 0;
@@ -537,6 +636,7 @@ body {
   cursor: pointer;
 }
 
+/* 이미지 미리보기 */
 .preview-container {
   position: relative;
   margin-top: 12px;
@@ -574,11 +674,16 @@ body {
   line-height: 1;
 }
 
-.btn-clear-file:hover { background: rgba(0,0,0,0.78); transform: scale(1.1); }
-.btn-clear-file:focus-visible { outline: 3px solid rgba(255,255,255,0.7); outline-offset: 2px; }
+.btn-clear-file:hover  { background: rgba(0,0,0,0.78); transform: scale(1.1); }
+.btn-clear-file:focus-visible {
+  outline: 3px solid rgba(255,255,255,0.7);
+  outline-offset: 2px;
+}
 
+/* ── 11. 유틸리티 ──────────────────────────────────────────── */
 [hidden] { display: none !important; }
 
+/* ── 12. 푸터 ────────────────────────────────────────────── */
 .app-footer {
   text-align: center;
   padding: 16px 20px;
@@ -589,6 +694,7 @@ body {
   margin-top: auto;
 }
 
+/* ── 13-A. 탭 네비게이션 ─────────────────────────────────────── */
 .tab-nav {
   display: flex;
   gap: 6px;
@@ -613,28 +719,52 @@ body {
   font-weight: 600;
   font-family: inherit;
   color: var(--text-secondary);
-  transition: background var(--transition-fast), color var(--transition-fast), box-shadow var(--transition-fast);
+  transition: background var(--transition-fast),
+              color var(--transition-fast),
+              box-shadow var(--transition-fast);
   white-space: nowrap;
 }
 
-.tab-btn:hover:not(.tab-active) { background: rgba(255, 255, 255, 0.7); color: var(--text-primary); }
-.tab-btn.tab-active { background: #ffffff; color: var(--text-primary); box-shadow: 0 2px 8px rgba(102, 126, 234, 0.18), 0 1px 3px rgba(0,0,0,0.08); }
-.tab-icon { font-size: 0.9rem; }
-.tab-btn:focus-visible { outline: 3px solid rgba(124, 58, 237, 0.5); outline-offset: 2px; }
+.tab-btn:hover:not(.tab-active) {
+  background: rgba(255, 255, 255, 0.7);
+  color: var(--text-primary);
+}
 
-.tab-panel { animation: fadeInTab 0.2s ease; }
+.tab-btn.tab-active {
+  background: #ffffff;
+  color: var(--text-primary);
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.18), 0 1px 3px rgba(0,0,0,0.08);
+}
+
+.tab-icon {
+  font-size: 0.9rem;
+}
+
+.tab-btn:focus-visible {
+  outline: 3px solid rgba(124, 58, 237, 0.5);
+  outline-offset: 2px;
+}
+
+/* 탭 패널 */
+.tab-panel {
+  animation: fadeInTab 0.2s ease;
+}
 
 @keyframes fadeInTab {
   from { opacity: 0; transform: translateY(4px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
+/* ── 13-B. 저장/수정 버튼 ────────────────────────────────────────── */
+
+/* 저장 버튼 (Teal) */
 .btn-teal {
   background: linear-gradient(135deg, #0ea5e9, #0284c7);
   color: #ffffff;
   box-shadow: 0 2px 10px rgba(14, 165, 233, 0.30);
 }
 
+/* 수정 버튼 (Outlined) */
 .btn-outline-edit {
   background: #ffffff;
   color: var(--text-secondary);
@@ -642,8 +772,13 @@ body {
   box-shadow: none;
 }
 
-.btn-outline-edit:hover:not(:disabled) { background: #f8fafc; border-color: #94a3b8; color: var(--text-primary); }
+.btn-outline-edit:hover:not(:disabled) {
+  background: #f8fafc;
+  border-color: #94a3b8;
+  color: var(--text-primary);
+}
 
+/* ── 13-C. 저장 상태 표시 ───────────────────────────────────────── */
 .save-status {
   padding: 8px 12px;
   border-radius: 8px;
@@ -653,19 +788,40 @@ body {
   line-height: 1.5;
 }
 
-.save-status-saved { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
-.save-status-error { background: #fff1f2; color: #be123c; border: 1px solid #fda4af; }
-.save-status-info  { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+.save-status-saved {
+  background: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
 
-.panel-right { display: flex; flex-direction: column; }
+.save-status-error {
+  background: #fff1f2;
+  color: #be123c;
+  border: 1px solid #fda4af;
+}
 
+.save-status-info {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+
+/* ── 13-D. 오른쪽 패널 — 결과 표시 ─────────────────────────────── */
+.panel-right {
+  /* min-height 제거: align-items: stretch 가 높이를 왼쪽 패널과 동기화함 */
+  display: flex;
+  flex-direction: column;
+}
+
+/* 결과 영역 전체를 패널 높이에 맞게 늘림 */
 .panel-right .result-area {
   flex: 1;
   display: flex;
   flex-direction: column;
-  min-height: 0;
+  min-height: 0;  /* flex 자식의 overflow 처리를 위해 필요 */
 }
 
+/* 플레이스홀더 */
 .right-placeholder {
   flex: 1;
   display: flex;
@@ -676,31 +832,84 @@ body {
   text-align: center;
 }
 
-.placeholder-icon  { font-size: 3.5rem; margin-bottom: 16px; opacity: 0.6; }
-.placeholder-title { font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 10px; }
-.placeholder-desc  { font-size: 0.875rem; color: var(--text-muted); line-height: 1.75; }
+.placeholder-icon {
+  font-size: 3.5rem;
+  margin-bottom: 16px;
+  opacity: 0.6;
+}
 
+.placeholder-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 10px;
+}
+
+.placeholder-desc {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  line-height: 1.75;
+}
+
+/* badge-green */
 .badge-green { color: var(--grad-green-from); }
-.model-name-inline { font-weight: 700; color: var(--text-model); word-break: break-all; }
 
-.download-row { padding: 14px 0 2px; display: flex; justify-content: center; }
-.btn-download-full { min-width: 180px; justify-content: center; }
+/* 모델명 인라인 표시 */
+.model-name-inline {
+  font-weight: 700;
+  color: var(--text-model);
+  word-break: break-all;
+}
 
+/* 다운로드 버튼 행 */
+.download-row {
+  padding: 14px 0 2px;
+  display: flex;
+  justify-content: center;
+}
+
+.btn-download-full {
+  min-width: 180px;
+  justify-content: center;
+}
+
+/* ── 13. 반응형 (데스크톱 우선, 최소한) ─────────────────────────── */
 @media (max-width: 900px) {
-  .main-layout { grid-template-columns: 1fr; align-items: start; padding: 12px; }
-  .app-header  { padding: 14px 16px; }
-  .app-title   { font-size: 1.4rem; }
-  .options-row { grid-template-columns: 1fr; gap: 12px; }
+  .main-layout {
+    grid-template-columns: 1fr;
+    align-items: start;  /* 모바일 세로 스택: 각 패널이 자신의 콘텐츠 높이를 가짐 */
+    padding: 12px;
+  }
+
+  .app-header { padding: 14px 16px; }
+  .app-title  { font-size: 1.4rem; }
+
+  .options-row {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
   .btn-row { flex-direction: column; }
   .btn     { width: 100%; justify-content: center; }
-  .panel   { padding: 20px; }
-  .panel-left  { overflow-y: visible; }
+
+  .panel { padding: 20px; }
+
+  /* 모바일: 왼쪽 패널 스크롤 해제 (세로 스택이므로 불필요) */
+  .panel-left { overflow-y: visible; }
+
+  /* 모바일: 오른쪽 패널은 독립적인 최소 높이 유지 */
   .panel-right { min-height: 300px; }
-  .result-image { max-height: 60vw; }
+
+  /* 모바일: 이미지 최대 높이 제한 */
+  .result-image {
+    max-height: 60vw;
+  }
   .loading-state { flex: none; min-height: 200px; }
+
   .right-placeholder { padding: 40px 16px; }
 }
 
+/* ── 14. 포커스 가시성 (접근성) ─────────────────────────────────── */
 :focus-visible {
   outline: 3px solid rgba(124, 58, 237, 0.55);
   outline-offset: 3px;
