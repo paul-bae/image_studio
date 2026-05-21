@@ -1,9 +1,9 @@
 /* ============================================================
    AI 이미지 스튜디오 — Custom Styles
-   Design: 밝고 트렌디하고 산뜻한 파스텔 그라디언트 콘셉
+   Design: 밝고 트렌디하고 산뜻한 파스텔 그라디언트 컨셉
    ============================================================ */
 
-/* ── 1. CSS 변수 (콜러 팔레트 & 디자인 토큰) ──────────────── */
+/* ── 1. CSS 변수 (컬러 팔레트 & 디자인 토큰) ──────────────── */
 :root {
   /* 그라디언트 팔레트 */
   --grad-header-from: #667eea;
@@ -61,7 +61,7 @@
   --transition-base:  250ms ease;
 }
 
-/* ── 2. 리셋 & 베이스 ──────────────────────────────────── */
+/* ── 2. 리셋 & 베이스 ──────────────────────────────────────── */
 *,
 *::before,
 *::after {
@@ -89,7 +89,7 @@ body {
   flex-direction: column;
 }
 
-/* ── 3. 헤더 ───────────────────────────────────────────── */
+/* ── 3. 헤더 ───────────────────────────────────────────────── */
 .app-header {
   background: linear-gradient(135deg, var(--grad-header-from) 0%, var(--grad-header-to) 100%);
   padding: 18px 32px;
@@ -124,7 +124,7 @@ body {
   letter-spacing: 0.01em;
 }
 
-/* ── 4. 메인 레이아웃 (40:60 분할) ──────────────────── */
+/* ── 4. 메인 레이아웃 (40:60 분할) ────────────────────────── */
 .main-layout {
   display: grid;
   grid-template-columns: 2fr 3fr;   /* 40% : 60% */
@@ -135,7 +135,7 @@ body {
   align-items: stretch;  /* 두 패널이 동일한 행 높이를 공유 */
 }
 
-/* ── 5. 패널 카드 ───────────────────────────────────────── */
+/* ── 5. 패널 카드 ───────────────────────────────────────────── */
 .panel {
   background: var(--bg-panel);
   border-radius: var(--radius-card);
@@ -178,7 +178,7 @@ body {
   letter-spacing: -0.02em;
 }
 
-/* ── 6. 폼 필드 공통 ──────────────────────────────────────── */
+/* ── 6. 폼 필드 공통 ────────────────────────────────────────── */
 .field-group {
   display: flex;
   flex-direction: column;
@@ -323,7 +323,7 @@ body {
 
 .field-inline { margin-bottom: 0; }
 
-/* ── 7. 버튼 ────────────────────────────────────────────── */
+/* ── 7. 버튼 ────────────────────────────────────────────────── */
 .btn-row {
   display: flex;
   gap: 12px;
@@ -409,7 +409,7 @@ body {
 
 .btn-icon { font-size: 1rem; }
 
-/* ── 8. 모델 정보 바 ───────────────────────────────────────── */
+/* ── 8. 모델 정보 바 ─────────────────────────────────────────── */
 .model-info-bar {
   background: var(--bg-model-info);
   border: 1.5px solid #bfdbfe;
@@ -429,7 +429,7 @@ body {
   font-size: 0.9rem;
 }
 
-/* ── 9. 결과 영역 ─────────────────────────────────────────── */
+/* ── 9. 결과 영역 ───────────────────────────────────────────── */
 .result-area {
   margin-top: 4px;
 }
@@ -445,7 +445,7 @@ body {
   background: linear-gradient(135deg, #f8f5ff, #eff6ff);
   border-radius: 14px;
   border: 1.5px dashed #c4b5fd;
-  flex: 1;      /* result-area 남은 공간 체움 */
+  flex: 1;      /* result-area 남은 공간 채움 */
   min-height: 0;
 }
 
@@ -571,7 +571,7 @@ body {
   word-break: break-word;
 }
 
-/* ── 10. 드래그앤드롭 영역 ────────────────────────────────── */
+/* ── 10. 드래그앤드롭 영역 ──────────────────────────────────── */
 .drop-zone {
   position: relative;
   border: 2px dashed var(--border-drop);
@@ -683,7 +683,7 @@ body {
 /* ── 11. 유틸리티 ──────────────────────────────────────────── */
 [hidden] { display: none !important; }
 
-/* ── 12. 푸터 ────────────────────────────────────────────── */
+/* ── 12. 푸터 ──────────────────────────────────────────────── */
 .app-footer {
   text-align: center;
   padding: 16px 20px;
@@ -694,7 +694,7 @@ body {
   margin-top: auto;
 }
 
-/* ── 13-A. 탭 네비게이션 ─────────────────────────────────────── */
+/* ── 13-A. 탭 네비게이션 ────────────────────────────────────── */
 .tab-nav {
   display: flex;
   gap: 6px;
@@ -755,7 +755,7 @@ body {
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ── 13-B. 저장/수정 버튼 ────────────────────────────────────────── */
+/* ── 13-B. 저장/수정 버튼 ────────────────────────────────────── */
 
 /* 저장 버튼 (Teal) */
 .btn-teal {
@@ -778,7 +778,7 @@ body {
   color: var(--text-primary);
 }
 
-/* ── 13-C. 저장 상태 표시 ───────────────────────────────────────── */
+/* ── 13-C. 저장 상태 표시 ───────────────────────────────────── */
 .save-status {
   padding: 8px 12px;
   border-radius: 8px;
@@ -806,7 +806,7 @@ body {
   border: 1px solid #bfdbfe;
 }
 
-/* ── 13-D. 오른쪽 패널 — 결과 표시 ─────────────────────────────── */
+/* ── 13-D. 오른쪽 패널 — 결과 표시 ─────────────────────────── */
 .panel-right {
   /* min-height 제거: align-items: stretch 가 높이를 왼쪽 패널과 동기화함 */
   display: flex;
@@ -873,7 +873,7 @@ body {
   justify-content: center;
 }
 
-/* ── 13. 반응형 (데스크톱 우선, 최소한) ─────────────────────────── */
+/* ── 13. 반응형 (데스크톱 우선, 최소한) ─────────────────────── */
 @media (max-width: 900px) {
   .main-layout {
     grid-template-columns: 1fr;
@@ -909,8 +909,98 @@ body {
   .right-placeholder { padding: 40px 16px; }
 }
 
-/* ── 14. 포커스 가시성 (접근성) ─────────────────────────────────── */
+/* ── 14. 포커스 가시성 (접근성) ─────────────────────────────── */
 :focus-visible {
   outline: 3px solid rgba(124, 58, 237, 0.55);
   outline-offset: 3px;
+}
+
+/* ── 15. 키워드 자동 생성 섹션 ──────────────────────────────── */
+.keyword-section {
+  background: linear-gradient(135deg, #fdf4ff, #eff6ff);
+  border: 1.5px solid #e9d5ff;
+  border-radius: 14px;
+  padding: 12px 14px;
+  margin-bottom: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.keyword-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.keyword-badge { font-size: 0.9rem; line-height: 1; }
+
+.keyword-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #6d28d9;
+  letter-spacing: -0.01em;
+}
+
+.keyword-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* field-input의 우측 padding 오버라이드 (카운터 없음) */
+.keyword-input {
+  flex: 1;
+  padding-right: 14px !important;
+  background: #ffffff !important;
+  border-color: #ddd6fe !important;
+  font-size: 0.875rem;
+}
+
+.keyword-input:focus {
+  border-color: #7c3aed !important;
+}
+
+/* 자동 생성 버튼 (Amber) */
+.btn-keyword {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #ffffff;
+  box-shadow: 0 2px 10px rgba(245, 158, 11, 0.30);
+  flex-shrink: 0;
+  padding: 9px 16px;
+  font-size: 0.85rem;
+}
+
+/* 자동 생성 상태 메시지 */
+.autofill-status {
+  padding: 7px 11px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.autofill-status-info {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+
+.autofill-status-success {
+  background: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
+.autofill-status-error {
+  background: #fff1f2;
+  color: #be123c;
+  border: 1px solid #fda4af;
+}
+
+/* 섹션 구분선 */
+.keyword-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #e9d5ff 30%, #e9d5ff 70%, transparent);
+  margin: 6px 0 10px;
 }

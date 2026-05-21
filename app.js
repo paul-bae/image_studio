@@ -8,8 +8,8 @@
 /* ============================================================
    1. SUPABASE INIT
    ============================================================ */
-const SUPABASE_URL      = 'https://mcshhvttsvfurrkpcbdf.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1jc2hodnR0c3ZmdXJya3BjYmRmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5ODI5MDgsImV4cCI6MjA4OTU1ODkwOH0.FRlSXHknfnYoZ4i4-_up8QvppoKHGo50koK9yDkXPUQ';
+const SUPABASE_URL      = window.APP_CONFIG?.SUPABASE_URL      ?? '';
+const SUPABASE_ANON_KEY = window.APP_CONFIG?.SUPABASE_ANON_KEY ?? '';
 
 let supabaseClient = null;
 try {
@@ -40,6 +40,13 @@ const genSaveStatusEl      = document.getElementById('gen-save-status');
 const btnGenSave           = document.getElementById('btn-gen-save');
 const btnGenEdit           = document.getElementById('btn-gen-edit');
 const btnGenerate          = document.getElementById('btn-generate');
+
+// ── 키워드 자동 생성 ──
+const keywordInput    = document.getElementById('keyword-input');
+const btnAutofill     = document.getElementById('btn-autofill');
+const autofillStatus  = document.getElementById('autofill-status');
+const autofillBtnIcon = document.getElementById('autofill-btn-icon');
+const autofillBtnText = document.getElementById('autofill-btn-text');
 
 // ── 이미지 보정 폼 ──
 const correctForm       = document.getElementById('correct-form');
@@ -90,10 +97,10 @@ function setupCharCounter(el, counterId, max) {
   update();
 }
 
-setupCharCounter(courseNameEl,         'course-name-counter',          200);
-setupCharCounter(targetAudienceEl,     'target-audience-counter',     2000);
-setupCharCounter(learningObjectivesEl, 'learning-objectives-counter', 2000);
-setupCharCounter(detailedContentEl,    'detailed-content-counter',    2000);
+setupCharCounter(courseNameEl,         'course-name-counter',           50);
+setupCharCounter(targetAudienceEl,     'target-audience-counter',      200);
+setupCharCounter(learningObjectivesEl, 'learning-objectives-counter',  200);
+setupCharCounter(detailedContentEl,    'detailed-content-counter',     200);
 
 /* ============================================================
    4. TAB SWITCHING
@@ -329,7 +336,116 @@ function setCorFormLocked(locked) {
 }
 
 /* ============================================================
-   7. CLIENT-SIDE API — LLM + IMAGE GENERATION
+   7. 키워드 자동 생성
+   ============================================================ */
+
+function showAutofillStatus(type, message) {
+  autofillStatus.textContent = message;
+  autofillStatus.className = `autofill-status autofill-status-${type}`;
+  autofillStatus.hidden = false;
+}
+
+function buildAutoFillPrompt(keyword) {
+  return (
+    'You are an expert at creating Korean educational image metadata.\n' +
+    'Given the keyword below, generate content for each field and return a JSON object with exactly these fields:\n' +
+    '  "imageName": Korean title for the educational image (50 Korean characters or less)\n' +
+    '  "targetAudience": Korean description of the application field (between 100 and 200 Korean characters)\n' +
+    '  "imageConcept": Korean description of the visual concept/theme (between 100 and 200 Korean characters)\n' +
+    '  "detailedContent": Korean description of the detailed scene/content (between 100 and 200 Korean characters)\n' +
+    '  "imageRatio": choose the most appropriate from "4:3", "5:4", "16:9", "21:9"\n' +
+    '  "imageSize": choose the most appropriate from "520x292", "1280x720"\n' +
+    'Character count rules: count only Korean characters (한글). Descriptions must be at least 100 characters.\n' +
+    'Return ONLY the raw JSON object — no markdown fences, no extra text.\n\n' +
+    `Keyword: ${keyword}`
+  );
+}
+
+async function callAutoFill(keyword) {
+  const { openrouterKey, groqKey } = getConfig();
+  const prompt = buildAutoFillPrompt(keyword);
+
+  let rawText;
+  let orResult = null;
+
+  if (openrouterKey) {
+    try {
+      const models = await fetchFreeTextModels(openrouterKey);
+      console.log(`[autofill] Free text models: ${models.length}`);
+      orResult = await tryTextModels(models, prompt, openrouterKey);
+    } catch (e) { console.warn('[autofill] OpenRouter error:', e.message); }
+  }
+
+  if (orResult) {
+    rawText = orResult.text.trim();
+  } else {
+    console.log('[autofill] OpenRouter 소진 → Groq 폴백');
+    const groqResult = await callGroqText(prompt, groqKey);
+    rawText = groqResult.text.trim();
+  }
+
+  const match = rawText.match(/\{[\s\S]*\}/);
+  if (!match) throw new Error('LLM이 유효한 JSON을 반환하지 않았습니다');
+  return JSON.parse(match[0]);
+}
+
+/* ── 자동 생성 버튼 이벤트 ── */
+async function runAutoFill() {
+  const keyword = keywordInput.value.trim();
+  if (!keyword) {
+    showAutofillStatus('error', '키워드를 입력해 주세요.');
+    keywordInput.focus();
+    return;
+  }
+
+  // 폼이 잠긴 상태면 먼저 해제
+  if (genSaved) resetGenSaveState();
+
+  setBusy(btnAutofill, true);
+  autofillBtnIcon.textContent = '⏳';
+  autofillBtnText.textContent = '생성 중...';
+  showAutofillStatus('info', '항목을 생성하는 중입니다...');
+
+  try {
+    const data = await callAutoFill(keyword);
+
+    // 유효값 범위 (select 옵션)
+    const RATIO_OPTIONS = ['4:3', '5:4', '16:9', '21:9'];
+    const SIZE_OPTIONS  = ['520x292', '1280x720'];
+
+    if (data.imageName)       courseNameEl.value         = String(data.imageName).slice(0, 50);
+    if (data.targetAudience)  targetAudienceEl.value     = String(data.targetAudience).slice(0, 200);
+    if (data.imageConcept)    learningObjectivesEl.value = String(data.imageConcept).slice(0, 200);
+    if (data.detailedContent) detailedContentEl.value    = String(data.detailedContent).slice(0, 200);
+    if (data.imageRatio && RATIO_OPTIONS.includes(data.imageRatio)) genRatioEl.value = data.imageRatio;
+    if (data.imageSize  && SIZE_OPTIONS.includes(data.imageSize))   genSizeEl.value  = data.imageSize;
+
+    // 글자수 카운터 갱신
+    [courseNameEl, targetAudienceEl, learningObjectivesEl, detailedContentEl]
+      .forEach(el => el.dispatchEvent(new Event('input')));
+
+    // 이미지 생성 버튼 활성화
+    setEnabled(btnGenerate, !!courseNameEl.value.trim());
+
+    showAutofillStatus('success', '✓ 자동 생성 완료! 내용을 확인·수정한 뒤 저장하세요.');
+  } catch (err) {
+    console.error('[autofill]', err);
+    showAutofillStatus('error', `생성 실패: ${err.message}`);
+  } finally {
+    setBusy(btnAutofill, false);
+    autofillBtnIcon.textContent = '✨';
+    autofillBtnText.textContent = '자동 생성';
+  }
+}
+
+btnAutofill.addEventListener('click', runAutoFill);
+
+keywordInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') { e.preventDefault(); runAutoFill(); }
+});
+
+/* ============================================================
+   8. CLIENT-SIDE API — LLM + IMAGE GENERATION
    ============================================================ */
 
 /* ── Config ── */

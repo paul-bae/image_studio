@@ -68,6 +68,36 @@
       >
         <form id="generate-form" novalidate>
 
+          <!-- 키워드 자동 생성 섹션 -->
+          <div class="keyword-section">
+            <div class="keyword-header">
+              <span class="keyword-badge" aria-hidden="true">✨</span>
+              <span class="keyword-title">키워드로 자동 생성</span>
+            </div>
+            <div class="keyword-row">
+              <input
+                type="text"
+                id="keyword-input"
+                class="field-input keyword-input"
+                placeholder="키워드 입력 (예: 산업안전, 리더십, 직장예절)"
+                maxlength="100"
+                aria-label="자동 생성 키워드"
+                data-testid="input-keyword"
+              />
+              <button
+                type="button"
+                id="btn-autofill"
+                class="btn btn-keyword"
+                data-testid="btn-autofill"
+              >
+                <span id="autofill-btn-icon" class="btn-icon" aria-hidden="true">✨</span>
+                <span id="autofill-btn-text">자동 생성</span>
+              </button>
+            </div>
+            <div id="autofill-status" class="autofill-status" hidden></div>
+          </div>
+          <div class="keyword-divider" aria-hidden="true"></div>
+
           <!-- 이미지 명칭 -->
           <div class="field-group">
             <label class="field-label" for="course-name">
@@ -79,14 +109,14 @@
                 id="course-name"
                 name="courseName"
                 class="field-input"
-                maxlength="200"
-                placeholder="이미지 명칭을 입력하세요 (최대 200자)"
+                maxlength="50"
+                placeholder="이미지 명칭을 입력하세요 (최대 50자)"
                 aria-describedby="course-name-counter"
                 data-testid="input-course-name"
                 required
               />
               <span class="char-counter char-counter-inline" id="course-name-counter" aria-live="polite">
-                <span class="char-current">0</span> / 200
+                <span class="char-current">0</span> / 50
               </span>
             </div>
           </div>
@@ -99,14 +129,14 @@
                 id="target-audience"
                 name="targetAudience"
                 class="field-textarea"
-                maxlength="2000"
+                maxlength="200"
                 rows="2"
-                placeholder="적용 분야를 입력하세요 (최대 2,000자)"
+                placeholder="적용 분야를 입력하세요 (100 ~ 200자)"
                 aria-describedby="target-audience-counter"
                 data-testid="input-target-audience"
               ></textarea>
               <span class="char-counter" id="target-audience-counter" aria-live="polite">
-                <span class="char-current">0</span> / 2,000
+                <span class="char-current">0</span> / 200
               </span>
             </div>
           </div>
@@ -119,14 +149,14 @@
                 id="learning-objectives"
                 name="learningObjectives"
                 class="field-textarea"
-                maxlength="2000"
+                maxlength="200"
                 rows="2"
-                placeholder="이미지 컨셉을 입력하세요 (최대 2,000자)"
+                placeholder="이미지 컨셉을 입력하세요 (100 ~ 200자)"
                 aria-describedby="learning-objectives-counter"
                 data-testid="input-learning-objectives"
               ></textarea>
               <span class="char-counter" id="learning-objectives-counter" aria-live="polite">
-                <span class="char-current">0</span> / 2,000
+                <span class="char-current">0</span> / 200
               </span>
             </div>
           </div>
@@ -139,14 +169,14 @@
                 id="detailed-content"
                 name="detailedContent"
                 class="field-textarea"
-                maxlength="2000"
+                maxlength="200"
                 rows="2"
-                placeholder="세부내용을 입력하세요 (최대 2,000자)"
+                placeholder="세부내용을 입력하세요 (100 ~ 200자)"
                 aria-describedby="detailed-content-counter"
                 data-testid="input-detailed-content"
               ></textarea>
               <span class="char-counter" id="detailed-content-counter" aria-live="polite">
-                <span class="char-current">0</span> / 2,000
+                <span class="char-current">0</span> / 200
               </span>
             </div>
           </div>
