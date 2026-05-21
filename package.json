@@ -10,5 +10,7 @@
   "scripts": {
     "dev": "npx serve . --cors -p 3000"
   },
-  "dependencies": {}
+  "devDependencies": {
+    "playwright": "^1.60.0"
+  }
 }

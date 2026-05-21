@@ -12,12 +12,16 @@ const OPENROUTER_MODELS_URL = 'https://openrouter.ai/api/v1/models';
 const OPENROUTER_CHAT_URL   = 'https://openrouter.ai/api/v1/chat/completions';
 const GROQ_CHAT_URL         = 'https://api.groq.com/openai/v1/chat/completions';
 
+// BUG-7 fix: 개별 OpenRouter 호출 타임아웃 (8초)
+const MODEL_TIMEOUT_MS = 8_000;
+
 async function fetchFreeTextModels() {
   const res = await fetch(OPENROUTER_MODELS_URL, {
     headers: {
       'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
       'Content-Type': 'application/json',
     },
+    signal: AbortSignal.timeout(10_000),
   });
   if (!res.ok) throw new Error(`OpenRouter models fetch ${res.status}`);
   const { data = [] } = await res.json();
@@ -32,6 +36,8 @@ async function fetchFreeTextModels() {
 async function callOpenRouter(modelId, prompt) {
   const res = await fetch(OPENROUTER_CHAT_URL, {
     method: 'POST',
+    // BUG-7 fix: 타임아웃 추가
+    signal: AbortSignal.timeout(MODEL_TIMEOUT_MS),
     headers: {
       'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
       'Content-Type': 'application/json',
@@ -46,17 +52,21 @@ async function callOpenRouter(modelId, prompt) {
   });
   if (!res.ok) throw new Error(String(res.status));
   const data = await res.json();
-  return data.choices?.[0]?.message?.content ?? null;
+  const text = data.choices?.[0]?.message?.content ?? null;
+  if (!text) throw new Error('empty response');
+  return text;
 }
 
+// BUG-5 fix: 배치 내 병렬 호출 (Promise.any)
 async function tryModelsInBatches(models, prompt) {
   for (let i = 0; i < models.length; i += 10) {
-    for (const model of models.slice(i, i + 10)) {
-      try {
-        const text = await callOpenRouter(model.id, prompt);
-        if (text) return text;
-      } catch { continue; }
-    }
+    const batch = models.slice(i, i + 10);
+    try {
+      const text = await Promise.any(
+        batch.map(m => callOpenRouter(m.id, prompt))
+      );
+      if (text) return text;
+    } catch { /* 배치 전체 실패 → 다음 배치 */ }
   }
   return null;
 }
@@ -67,6 +77,7 @@ async function callGroq(prompt) {
     try {
       const res = await fetch(GROQ_CHAT_URL, {
         method: 'POST',
+        signal: AbortSignal.timeout(15_000),
         headers: {
           'Authorization': `Bearer ${process.env.GROQ_API_KEY}`,
           'Content-Type': 'application/json',
@@ -107,6 +118,13 @@ export default async function handler(req, res) {
 
   const { keyword } = req.body ?? {};
   if (!keyword?.trim()) return res.status(400).json({ error: 'keyword is required' });
+
+  // BUG-4 fix: 환경변수 미설정 조기 감지
+  if (!process.env.OPENROUTER_API_KEY && !process.env.GROQ_API_KEY) {
+    return res.status(503).json({
+      error: 'API 키가 서버에 설정되지 않았습니다. Vercel 환경변수(OPENROUTER_API_KEY, GROQ_API_KEY)를 확인하세요.',
+    });
+  }
 
   try {
     const prompt = buildPrompt(keyword.trim());

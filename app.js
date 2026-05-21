@@ -365,18 +365,28 @@ function buildAutoFillPrompt(keyword) {
 async function callAutoFill(keyword) {
   // 1. 서버사이드 API 우선 (Vercel 배포 환경)
   try {
+    // BUG-8 fix: 클라이언트 타임아웃을 서버 maxDuration(60s)에 맞게 상향
     const res = await fetch('/api/autofill', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ keyword }),
-      signal: AbortSignal.timeout(30_000),
+      signal: AbortSignal.timeout(58_000),
     });
+
     if (res.ok) {
       const data = await res.json();
       if (data.imageName || data.targetAudience) return data;
+    } else if (res.status !== 404) {
+      // BUG-3 fix: 404(함수 미배포) 제외한 모든 오류는 즉시 throw — 클라이언트 폴백 없음
+      const body = await res.json().catch(() => ({}));
+      throw new Error(body.error ?? `서버 오류 ${res.status}`);
     }
+    // 404 → 함수 미배포 환경 (npx serve 로컬 등) → 클라이언트 폴백으로 진행
+    console.warn('[autofill] /api/autofill 없음 (404) — 클라이언트 폴백');
   } catch (e) {
-    console.warn('[autofill] /api/autofill 미사용 — 클라이언트 폴백:', e.message);
+    // TypeError(네트워크 오류) · AbortError(타임아웃) 만 폴백 허용, 그 외는 재전파
+    if (e.name !== 'TypeError' && e.name !== 'AbortError') throw e;
+    console.warn('[autofill] /api/autofill 네트워크 오류 — 클라이언트 폴백:', e.message);
   }
 
   // 2. 클라이언트 직접 호출 폴백 (로컬 개발 환경, config.js 필요)
@@ -397,6 +407,8 @@ async function callAutoFill(keyword) {
   if (orResult) {
     rawText = orResult.text.trim();
   } else {
+    // BUG-6 fix: 빈 groqKey로 호출 방지
+    if (!groqKey) throw new Error('API 키가 없습니다. Vercel 환경변수(GROQ_API_KEY)를 확인하세요.');
     console.log('[autofill] OpenRouter 소진 → Groq 폴백');
     const groqResult = await callGroqText(prompt, groqKey);
     rawText = groqResult.text.trim();
