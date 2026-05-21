@@ -8,8 +8,9 @@
 /* ============================================================
    1. SUPABASE INIT
    ============================================================ */
-const SUPABASE_URL      = window.APP_CONFIG?.SUPABASE_URL      ?? '';
-const SUPABASE_ANON_KEY = window.APP_CONFIG?.SUPABASE_ANON_KEY ?? '';
+// Supabase anon key는 클라이언트 공개 키 — git 노출 허용
+const SUPABASE_URL      = window.APP_CONFIG?.SUPABASE_URL      ?? 'https://mcshhvttsvfurrkpcbdf.supabase.co';
+const SUPABASE_ANON_KEY = window.APP_CONFIG?.SUPABASE_ANON_KEY ?? 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1jc2hodnR0c3ZmdXJya3BjYmRmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5ODI5MDgsImV4cCI6MjA4OTU1ODkwOH0.FRlSXHknfnYoZ4i4-_up8QvppoKHGo50koK9yDkXPUQ';
 
 let supabaseClient = null;
 try {
@@ -362,6 +363,23 @@ function buildAutoFillPrompt(keyword) {
 }
 
 async function callAutoFill(keyword) {
+  // 1. 서버사이드 API 우선 (Vercel 배포 환경)
+  try {
+    const res = await fetch('/api/autofill', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ keyword }),
+      signal: AbortSignal.timeout(30_000),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.imageName || data.targetAudience) return data;
+    }
+  } catch (e) {
+    console.warn('[autofill] /api/autofill 미사용 — 클라이언트 폴백:', e.message);
+  }
+
+  // 2. 클라이언트 직접 호출 폴백 (로컬 개발 환경, config.js 필요)
   const { openrouterKey, groqKey } = getConfig();
   const prompt = buildAutoFillPrompt(keyword);
 
